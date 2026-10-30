@@ -6,4 +6,4 @@
 
 Подтверждены статические declarations/source contracts и10 проверок логики Lua5.4; настоящие вызовы LineTrace/weak-pointer decoding, lighting register/attachment, renderer, visual follow, Glimmer independence и cleanup требуют игрового прогона. Прямого reflected IsRegistered нет; readbacks не выдают за видимый рендер.
 
-Следующий шаг — безопасная установка точного опубликованного payload при закрытой игре, затем пользовательский короткий игровой тест по инструкции. Production gate BLOCKED. Нет версии/релиза/визуальной приёмки. Смена уровня, смерть, respawn, кат-сцены и FPS вне текущего этапа.
+Проба установлена при закрытой игре: только собственные main.lua/маркер, baseline40 Mods files/18 protected inputs неизменен; [точная source/install/rollback identity](RUNTIME_EXPERIMENT.md). Откат подготовлен и проверен, не выполнен. Следующий шаг — пользовательский короткий игровой тест по инструкции. Production gate BLOCKED. Нет версии/релиза/визуальной приёмки. Смена уровня, смерть, respawn, кат-сцены и FPS вне текущего этапа.

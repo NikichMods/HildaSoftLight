@@ -17,7 +17,7 @@
 
 ## Git и приёмка
 
-`main` содержит основу проекта; исследование освещения — `research/lighting-feasibility`. Документация может попадать в main по DevRules; непроверенное runtime-поведение — только в отдельной ветке. Перед production необходим reviewable evidence gate; для stable — пользовательская визуальная приёмка и проверка жизненного цикла. Не назначать номер до реального build/handoff.
+`main` содержит основу проекта; статическое исследование освещения — `research/lighting-feasibility`, текущая runtime-проба — `research/pointlight-runtime`. Документация может попадать в main по DevRules; непроверенное runtime-поведение — только в отдельной ветке. Перед production необходим reviewable evidence gate; для stable — пользовательская визуальная приёмка и проверка жизненного цикла. Не назначать номер до реального build/handoff.
 
 ## Лицензирование
 
