@@ -1,6 +1,6 @@
 # PointLight runtime experiment
 
-**PREPARED / UNTESTED.** Research-only Lua; no production version or release. Code lives in `research/pointlight-runtime/Scripts/main.lua`.
+**BOUNDED RUNTIME PASS — manual path,2026-10-30.** Creation, ON/OFF, guarded follow and native user cleanup ran successfully; user confirms a visible light effect. Automatic timeout/Glimmer and separate per-surface visual acceptance remain unconfirmed. The probe has been archived/removed from active loading. See [the owning result](../../docs/RUNTIME_EXPERIMENT.md). Research-only Lua; no production version or release. Code lives in `research/pointlight-runtime/Scripts/main.lua`.
 
 Question: can this Shipping game register, attach, display and logically destroy one independent transient PointLightComponent on the guarded gameplay Hilda pawn? R-016 proves the general owned-component route, not this light. A small probe is needed because native rendering and visual appearance cannot be proved from declarations or mocks. No UI/Widget/Slate layer is included.
 

@@ -1,9 +1,11 @@
 # Статус
 
-Первый runtime-эксперимент **PREPARED / UNTESTED**, 2026-10-30, ветка `research/pointlight-runtime`. [Подготовка и установленное состояние](RUNTIME_EXPERIMENT.md), [инструкция/исходник](../research/pointlight-runtime/README.md). Main не меняется.
+Первый PointLight runtime-прогон разобран: **BOUNDED RUNTIME PASS — manual path**,2026-10-30. [Точные доказательства и ограничения](RUNTIME_EXPERIMENT.md). Ветка `research/pointlight-runtime`, main не меняется.
 
-Подготовлен один собственный transient PointLightComponent с pawn Outer/root attachment, первоначально DARK, управляемыми on/off и ручной/90s timeout очисткой. Диагностические60лм/350см, inverse-square, linearRGB1/0.9/0.75 и offset60/0/30см не являются принятыми настройками мода. Каналы только собственного света определяются по прочитанной модели и одному blocking floor hit.
+Создание собственного transient PointLightComponent, dark setup, FinishAddComponent/root attachment, чтение каналов модели/пола, ON→OFF→ON, следование и ручная native logical destruction прошли без ошибок пробы. Monitor/timeout handles отменены; пользователь подтвердил видимый световой эффект.123 guarded проверок — не FPS-бенчмарк.
 
-Подтверждены статические declarations/source contracts и10 проверок логики Lua5.4; настоящие вызовы LineTrace/weak-pointer decoding, lighting register/attachment, renderer, visual follow, Glimmer independence и cleanup требуют игрового прогона. Прямого reflected IsRegistered нет; readbacks не выдают за видимый рендер.
+Автоматический90s timeout не выполнялся: пользователь остановил пробу примерно через58.81с. Glimmer independence и отдельная визуальная оценка модели/геометрии/полного исчезновения не подтверждены. Полный level/pawn lifecycle не проверен. **Production gate BLOCKED**, архитектура и параметры не приняты.
 
-Проба установлена при закрытой игре: только собственные main.lua/маркер, baseline40 Mods files/18 protected inputs неизменен; [точная source/install/rollback identity](RUNTIME_EXPERIMENT.md). Откат подготовлен и проверен, не выполнен. Следующий шаг — пользовательский короткий игровой тест по инструкции. Production gate BLOCKED. Нет версии/релиза/визуальной приёмки. Смена уровня, смерть, respawn, кат-сцены и FPS вне текущего этапа.
+Лог/установленный исходник сохранены приватно. Собственный loader payload снят при закрытой игре;40 исходных файлов Mods восстановлены по составу и SHA256, чужие моды/настройки не изменялись. Текущее состояние сохранений после игры сохранено, отката SaveGames нет.
+
+Этот этап завершён в пределах технического manual-path результата. Дизайн/настройка обсуждаются отдельно по указанию пользователя; новый код, установка и дополнительные игровые сценарии сейчас не выполняются.
