@@ -12,6 +12,10 @@
 
 Все чтения/редактирование по-прежнему в одном EngineTick; нет input-thread callbacks/dispatch. Raw key edge фиксируется даже при модификаторах/закрытом редакторе, поэтому отпускание Ctrl/Alt или открытие редактора при удерживаемом NumPad не вызывает отложенную правку.21 offline tests PASS, включая новый вход/выход, bare keys, закрытую панель, удержание через смену модификаторов и F10/bare-UE4SS конфликты. Следующий runtime — открыть F10, настроить обычным NumPad, закрыть/открыть, сохранить и STOP; отсутствие двойного игрового действия и новая раскладка ещё не приняты.
 
+## Текущая установка
+
+Установлена при закрытой игре source `4e0fe21b4a06b40ee5026b7796796177c2f2f69d`, main SHA256 `c8db2fcd13c127972ad0f77d6261a501fb0b0dcaf4a5213eab344e30289090e2`. Все четыре Lua совпали с Git blobs и установленными файлами. Оригинальные44 mod files и19 текущих loader/config/save inputs hash-проверены без изменений. Own failure diagnostic сохранён; предыдущий payload архивирован. Private manifest `.local/live-light-tuner/edit-mode-update-20261030T095013Z/manifest.json`; current-install обновлён, exact rollback проверен и не выполнялся. Новый кандидат в игре не запускался. Раскладка: Ctrl+Alt+F10 входит/выходит из редактора; только внутри bare NumPad, Num9 SAVE и Multiply STOP. При закрытии свет остаётся, NumPad для тюнера инертен. Одно действие на нажатие без автоповтора; unsaved числа прошлого run не подменяют explicit settings.
+
 ## Второй runtime run и input revision,2026-10-30
 
 Source `55db771563dfbd5790982190931a4a9eb970eed4`, main SHA256 `79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed`. READY12:23:56.859 МСК; failure12:31:21.653, примерно7м25с работы. Лог: `.local/live-light-tuner/run-20261030T093917Z/UE4SS.log`, SHA256 `b2b07f2e7efbf918bf1e0a3f2992733f9d5b83635bbceab698234f41f9894309`. Own diagnostic SHA256 `9e15abf49ad239deb0b079cb2a25cfca056fb05758acfef52a47b3e48aded9a9`; оба оригинала и installed payload сохранены приватно.

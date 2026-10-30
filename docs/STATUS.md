@@ -11,3 +11,5 @@ Pinned UE4SS source показывает риск одновременного �
 Closed-game installed source `77e585ad1416d786f53753ff10a7b372d83ddc70`; exact payload/rollback проверены. Runtime нового input path ожидает пользователя.
 
 По запросу пользователя управление изменено: Ctrl+Alt+F10 входит/выходит из редактирования, внутри bare NumPad; снаружи NumPad инертен для тюнера. Закрытие оставляет свет для сравнения, Multiply внутри редактора выполняет STOP. На каждом входе — known game/UE4SS conflict audit; input consumption не заявлен.21 offline checks PASS, новый runtime ожидается. См. актуальную source/install identity в LIVE_TUNER.md.
+
+Closed-game installed source `4e0fe21b4a06b40ee5026b7796796177c2f2f69d`; exact payload/rollback проверены. Runtime режима F10/bare NumPad ожидает пользователя.
