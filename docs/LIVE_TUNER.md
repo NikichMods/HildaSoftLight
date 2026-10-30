@@ -1,14 +1,24 @@
 # Live tuner — подготовка
 
-**Первый tuner run остановлен защитой; диагностическая ревизия PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
+**Второй run локализовал ошибку Lua bridge; исправление input dispatch PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
-## Текущая диагностическая установка
+## Второй runtime run и input revision,2026-10-30
 
-Установлена closed-game диагностическая source revision `55db771563dfbd5790982190931a4a9eb970eed4`; source/installed main SHA256 `79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed`. Все исходные Mods сохранены; прежний own payload архивирован. Точный откат проверен и не выполнен. Private current-install.json обновлён; manifest `.local/live-light-tuner/diagnostic-update-20261030T091950Z/manifest.json`. Новая диагностическая ревизия в игре не выполнялась.
+Source `55db771563dfbd5790982190931a4a9eb970eed4`, main SHA256 `79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed`. READY12:23:56.859 МСК; failure12:31:21.653, примерно7м25с работы. Лог: `.local/live-light-tuner/run-20261030T093917Z/UE4SS.log`, SHA256 `b2b07f2e7efbf918bf1e0a3f2992733f9d5b83635bbceab698234f41f9894309`. Own diagnostic SHA256 `9e15abf49ad239deb0b079cb2a25cfca056fb05758acfef52a47b3e48aded9a9`; оба оригинала и installed payload сохранены приватно.
 
-## Сбой первого tuner-прогона,2026-10-30
+Traceback: main19 path→cls→native34→alive39→frame224. При проверке viewport/world native IsValid библиотечный CDO.GetClass вернул Lua function вместо UObject/UClass (`attempt to index a function value`); после cleanup UE4SS отдельно сообщил `Lua::Registry::get_function_ref: Ref was not function`. Это локализует нарушенный Lua/native return/registry contract. Точная межпоточная последовательность не измерялась. `stage=light_check_2` был последним присвоенным stage, а не местом исключения; использовать traceback. Последний CONTROL12:31:21.454 — NUM_SIX, Front X40→42cm, без ошибки; связь с изменением Z/Num8 не установлена. Snapshot: Front0.60lm, radius140cm, XYZ42/0/70cm,5000K,ON,shadowON; Back2lm,150cm,−60/0/30cm,5000K,OFF. Это сохранённые диагностические числа, не принятый пресет; explicit settings-файла/события SAVED в этой сессии нет.
+
+CANCEL removed=true/active=false, оба native destroy IsValid=false, UI release и CLEANED reason=failure завершились. Игра затем закрыта пользователем, Event loop end12:31:33.155. Не было90s timeout или самостоятельного restart.
+
+В pinned [UE4SS LuaMod.cpp83330635](https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/Mod/LuaMod.cpp) make_hook_state766ff возвращает один per-mod m_hook_lua; ExecuteInGameThread4331ff делает lua_xmove/luaL_ref в этот стек под mutex; process_delayed_actions4017ff вызывает live callback вне этого mutex. RegisterKeyBind callback мог параллельно вызывать ExecuteInGameThread. Это **поддержанная исходником гипотеза гонки**, согласующаяся с неправильным return type и registry ref, но не доказанное инструментированием точное происхождение сбоя.
+
+Выбран узкий обход проблемного сочетания: убрать собственные input-thread callbacks и все ExecuteInGameThread handoffs. Один cancellable EngineTick loop с startup выполняет native IsInputKeyDown/FKey chord edge polling,50-row preflight, live controls, UI/frame sampling и cleanup. GetOwningPlayer→K2_GetPawn подтверждены installed UHT; FKey/IsInputKeyDown имеют принятый R-014 precedent. До ручного START нет UI/света, поиск HUD не чаще одного раза за30frames. STOP отменяет единственный action; закрытая панель игнорирует изменения, меню не откладывает действия. Прежние ownership/world/native-shape guards не ослаблены. Ретрай неправильного return, кеширование вокруг ошибки или изменения UE4SS DLL не выбраны: они маскировали бы симптом либо расширяли бы воздействие.
+
+17 offline Lua5.4 tests PASS: обычные действия/сохранение/cleanup/контексты, held-key edge, modifiers/menu suppression, inert after STOP, запрещённые RegisterKeyBind/ExecuteInGameThread (моки бросают ошибку на вызове). Это проверяет нашу оркестрацию, не воспроизводит нативную гонку и не доказывает runtime-исправление. Следующий достаточный шаг — обычная настройка пользователем с новым кандидатом, затем чтение логов. Визуальная приёмка и стабильность нового input path остаются открытыми.
+
+## История: сбой первого tuner-прогона,2026-10-30
 
 **PARTIAL RUNTIME / STOPPED_ON_FAILURE. Точная причина пока неизвестна.** В12:10:55.635 МСК защитная ветка завершила тюнер: CANCEL handle1 removed=true/active=false, native destroy обоих источников, release собственного UI и CLEANED reason=failure. Это не Num8 STOP и не таймер: у Num8 только выбор параметра. Пользователь связал исчезновение панели/света с регулировкой высоты и возможным Ctrl+Alt+8; лог не записывал control sequence, поэтому конкретная клавиша/параметр не подтверждены.
 

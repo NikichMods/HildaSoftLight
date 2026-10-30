@@ -63,7 +63,24 @@ function U.cleanup()assert(S.game);S.ui_exists=false;S.ui_visible=false end
 package.preload.TunerUI=function()return U end
 Key={NUM_ZERO=100,NUM_ONE=101,NUM_TWO=102,NUM_THREE=103,NUM_FOUR=104,NUM_FIVE=105,
  NUM_SIX=106,NUM_SEVEN=107,NUM_EIGHT=108,NUM_NINE=109,MULTIPLY=110}
+S.controller=frameobject('/World.Controller','/Script/Genesis.GenesisPlayerController',9013)
+S.held={}
+function S.hud:GetOwningPlayer()assert(S.game);return S.controller end
+function S.controller:K2_GetPawn()assert(S.game);return S.pawn end
+function S.controller:IsInputKeyDown(key)assert(S.game);S.key_reads=(S.key_reads or 0)+1;return S.held[key.KeyName]==true end
+function RegisterKeyBind()error('input-thread callbacks forbidden')end
+function ExecuteInGameThread()error('cross-thread handoff forbidden')end
+function LoopInGameThreadAfterFrames(n,fn)
+ assert(n==1 and not S.monitor);S.next=S.next+1
+ S.monitor=S.next;S.actions[S.next]={fn=fn,active=true};return S.monitor
+end
 function frame()S.clock=S.clock+1/60;fire(S.monitor)end
+local names={'NumPadZero','NumPadOne','NumPadTwo','NumPadThree','NumPadFour','NumPadFive',
+ 'NumPadSix','NumPadSeven','NumPadEight','NumPadNine','Multiply'}
+function press(k)
+ S.held={LeftControl=true,LeftAlt=true,[names[k-99]]=true};frame()
+ S.held={};frame()
+end
 '''
 class ModelPolicy(unittest.TestCase):
     def setUp(self):
@@ -132,7 +149,7 @@ class Orchestration(unittest.TestCase):
                   'press(103);assert(contains("event=SHADOW front=true"));for i=1,120 do frame()end;'
                   'assert(S.created==2);press(110)')
     def test_pending_start_cancel_and_pawn_loss(self):
-        self.case('S.keys[100]();S.keys[110]();flush();assert(S.created==0)')
+        self.case('press(110);press(100);assert(S.created==0 and not S.actions[S.monitor].active)')
         self.case('press(100);S.pawn.live=false;frame();assert(S.destroyed==2 and not S.ui_exists)')
     def test_viewport_world_change_stops_without_rebind(self):
         self.case('press(100);S.viewport.World=nil;frame();assert(S.destroyed==2 and not S.ui_exists);press(100);assert(S.created==2)')
@@ -144,4 +161,15 @@ class Orchestration(unittest.TestCase):
     def test_failure_preserves_trace_and_current_state(self):
         self.case('press(100);S.comp.Intensity=999;for i=1,30 do frame()end;'
                   'assert(contains("FAILED") and contains("recorded=true") and S.destroyed==2 and not S.ui_exists)')
+    def test_native_polling_edges_stop_and_no_dispatch(self):
+        self.case('press(100);assert(not next(S.keys));local intensity=S.comp.Intensity;local function controls()local n=0;for _,v in ipairs(S.logs)do if v:find("event=CONTROL",1,true)then n=n+1 end end;return n end;local count=controls();'
+                  'S.held={LeftControl=true,LeftAlt=true,NumPadSix=true};'
+                  'for i=1,120 do frame()end;assert(not contains("FAILED") and S.created==2 and controls()==count+1);'
+                  'S.held={};frame();press(110);local queries=S.current_queries;local key_reads=S.key_reads;'
+                  'for i=1,60 do frame()end;assert(S.current_queries==queries and S.key_reads==key_reads and S.destroyed==2)')
+    def test_missing_modifiers_and_menu_do_not_edit(self):
+        self.case('press(100);local value=S.comp.Intensity;'
+                  'S.held={NumPadSix=true};frame();assert(S.comp.Intensity==value);'
+                  'S.held={};frame();S.menu=true;press(106);assert(S.comp.Intensity==value);'
+                  'press(110);assert(S.destroyed==2)')
 if __name__=='__main__':unittest.main()

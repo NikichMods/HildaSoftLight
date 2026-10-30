@@ -1,8 +1,8 @@
 {
-  "preparationStatus": "DIAGNOSTIC_REVISION_UNTESTED_ROOT_CAUSE_UNKNOWN",
+  "preparationStatus": "SINGLE_ENGINETICK_INPUT_PREPARED_RUNTIME_UNTESTED",
   "base": "d01606534066cf0ac99edc3a6041fd4b92feda3e",
   "payloadSha256": {
-    "main.lua": "79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed",
+    "main.lua": "b6569bddca0d428c45af868fd29f688d58509d749ac1a08205e620f89b53f56b",
     "TunerModel.lua": "d9e1d33f1d5d1d008a69019dfb9099cc1855d625eb7287ef54b430625b4c1eab",
     "TunerUI.lua": "66539f0777c22fd8b60b1650cf6a16b01e8d362abeeef1c0c862001d7f2e266a",
     "KeyboardBindings.lua": "ef35fff0ebff4e327328f3c3a803717e8b8d3087e0841ddc847b9bef7f83725f"
@@ -21,7 +21,10 @@
     "ue4ss-83330635-LuaMod.cpp": "ecc9448999fdac16d4b9181d73f99aafeb8f75dd12ad921e3f7f7922d8298227",
     "world-space/KismetSystemLibrary.cpp": "e43a4cf52e2670eab40f15e5634a79651ec7ff21760e0bb07a4b08eadc02b555",
     "UHT/Engine/Public/Engine.h": "13ef7469ea7f3f9a3d6dd4bad0660902d0f7e357758c0137a5cd65ce633679b8",
-    "UHT/Engine/Public/GameViewportClient.h": "cf6b8852e463c4978187af1d9c158ace96b0e40f7a26e1677fea538df65f3a0e"
+    "UHT/Engine/Public/GameViewportClient.h": "cf6b8852e463c4978187af1d9c158ace96b0e40f7a26e1677fea538df65f3a0e",
+    "UHT/UMG/Public/Widget.h": "ff39fb27aa8fd5d8332e5185d97f6a293672fe7be40acba38bf92da73e0147a9",
+    "UHT/Engine/Public/Controller.h": "b2e17e480e261a6133719d4202099ebb0d1e6f5f3408b06682a499609e809980",
+    "UHT/Engine/Public/PlayerController.h": "d7a66f69ddb2fefbdf775c7eac10a5ac6678552d00d2a871f0f6a16f6d2d30ee"
   },
   "UE4.27Sources": {
     "GameplayStatics.cpp": {
@@ -60,7 +63,8 @@
   "inputIdentifiersSourceSha256": "5b91709cf157d0e9adb543a820ea6e12cd2425b069a54ab0bd52d009eac0ef81",
   "acceptedReuse": {
     "light": "Asterigos-Research R-018 / HildaSoftLight 9a449cf",
-    "viewportHost": "Asterigos-Research R-017 / IIP 6e9ebdd"
+    "viewportHost": "Asterigos-Research R-017 / IIP 6e9ebdd",
+    "nativeInput": "Asterigos-Research R-014 / CombatHUD: owning controller + IsInputKeyDown(FKey); new polling-chord integration untested"
   },
   "runtimeEvidence": "../../docs/LIVE_TUNER.md",
   "UE4SSGetWorldSource": "https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/LuaType/LuaAActor.cpp#L49"

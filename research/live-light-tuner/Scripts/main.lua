@@ -10,7 +10,7 @@ local LIGHT="/Script/Engine.PointLightComponent"
 local phase,stop_intent="armed",false
 local owns={};local target;local loop_handle;local panel_note;local settings_file
 local diagnostic_file,last_key,stage=nil,"none","startup"
-local dispatch,cleanup,begin_effects
+local cleanup,begin_effects
 local function ascii(s)
     return tostring(s):gsub("[^ -~]",function(c)return string.format("\\x%02X",c:byte())end)
 end
@@ -109,11 +109,7 @@ cleanup=function(reason)
     attempt(UI.cleanup)
     if #errors>0 then log("CLEANUP_PENDING",table.concat(errors," | "));return end
     target=nil;phase="stopped"
-    log("CLEANED","reason="..reason.." own_lights=0 own_viewport=0 action_handles=0 key_callbacks=inert no_timeout=true")
-end
-dispatch=function(fn)
-    local ok,e=pcall(ExecuteInGameThread,function()guarded(fn)end,EGameThreadMethod.EngineTick)
-    if not ok then stop_intent=true;log("DISPATCH_FAILED",tostring(e):sub(1,180))end
+    log("CLEANED","reason="..reason.." own_lights=0 own_viewport=0 action_handles=0 native_key_polling=stopped no_timeout=true")
 end
 UI.bind({valid=valid,alive=alive,path=path,cls=cls,same=same,ref=ref,find=find,static=static,step=step,context=context})
 local function now(p)
@@ -215,25 +211,6 @@ begin_effects=function()
     if stop_intent then cleanup("user");return end
     if state.lights[1].shadow and not shadow_allowed()then state.lights[1].shadow=false;state.note="Saved shadows disabled by engine gate"end
     apply(1);apply(2);phase="ready";Model.resetPerf(state,now(p),true)
-    local ticks=0
-    loop_handle=LoopInGameThreadAfterFrames(1,function()
-        if stop_intent or phase~="ready"then return end
-        guarded(function()
-            local current=find(target.pawn);assert(instance(current),"pawn expired")
-            local viewport,world=find(target.viewport),find(target.world)
-            assert(alive(viewport)and alive(world)and same(viewport.World,world),"current viewport world changed")
-            ticks=ticks+1
-            if ticks%30==0 then
-                local _,cp,cr=context();checkedLight(1,cp,cr);checkedLight(2,cp,cr)
-                if not scene()then
-                    if state.panel then state.panel=false;UI.show(false)end
-                    Model.resetPerf(state,now(cp),true);return
-                end
-            end
-            if Model.sample(state,now(current))then refresh()end
-        end)
-    end)
-    assert(type(loop_handle)=="number","frame handle unavailable")
     refresh();log("READY","own_lights=2 independent_viewport=true Front=4lm_Back=2lm_if_no_saved_profile no_timeout=true handle="..loop_handle)
 end
 local reserved={NumPadZero=true,NumPadOne=true,NumPadTwo=true,NumPadThree=true,NumPadFour=true,
@@ -241,14 +218,14 @@ local reserved={NumPadZero=true,NumPadOne=true,NumPadTwo=true,NumPadThree=true,N
 local function check_bindings(index)
     if stop_intent or phase~="checking"then return end
     context();assert(scene(),"input context changed during key preflight")
-    for i=index,math.min(index+9,#Bindings)do
+    for i=index,#Bindings do
         local key=game("GetKeyByVirtualKey",FName(Bindings[i]))
         assert(type(key)=="table"and key.KeyName~=nil,"current key resolver shape")
         local name=key.KeyName:ToString()
         assert(not reserved[name],"game key collision: "..Bindings[i].."="..name)
     end
-    if index+10<=#Bindings then dispatch(function()check_bindings(index+10)end)
-    else log("INPUT_CLEAR","keyboard_virtual_rows="..#Bindings.." exact_CtrlAlt_bindings_registered=true");begin_effects()end
+    log("INPUT_CLEAR","keyboard_virtual_rows="..#Bindings.." native_key_polling=true")
+    begin_effects()
 end
 local function start()
     local h,p
@@ -293,26 +270,86 @@ local function action(key)
         .." value="..state.lights[state.selected][Model.fields[state.param]].." panel="..tostring(state.panel))
     refresh()
 end
+-- All native reads, controls and light/UI mutations share this single EngineTick callback.
+-- No input-thread Lua callbacks and no ExecuteInGameThread handoff while it is running.
+local poll_controller,ticks,last_held=nil,0,{}
+local key_names={NUM_ZERO="NumPadZero",NUM_ONE="NumPadOne",NUM_TWO="NumPadTwo",
+    NUM_THREE="NumPadThree",NUM_FOUR="NumPadFour",NUM_FIVE="NumPadFive",NUM_SIX="NumPadSix",
+    NUM_SEVEN="NumPadSeven",NUM_EIGHT="NumPadEight",NUM_NINE="NumPadNine",MULTIPLY="Multiply"}
+local keys={"MULTIPLY","NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE",
+    "NUM_SIX","NUM_SEVEN","NUM_EIGHT","NUM_NINE"}
+local function poll_keys()
+    if phase=="armed"and(ticks==1 or ticks%30==0)then
+        poll_controller=nil
+        for _,h in ipairs(FindAllOf("HUDMainUMG_BP_C")or{})do
+            if instance(h)and h:IsInViewport()then
+                local p=h:GetOwningPlayerPawn()
+                if instance(p)and cls(p)==HILDA then
+                    local c=h:GetOwningPlayer()
+                    if instance(c)and same(c:K2_GetPawn(),p)then
+                        assert(not poll_controller,"ambiguous input controller")
+                        poll_controller=ref(c)
+                    end
+                end
+            end
+        end
+    end
+    local c=find(poll_controller)
+    if not instance(c)then
+        assert(phase=="armed","input controller lost")
+        poll_controller=nil;last_held={};return
+    end
+    if phase=="ready"then assert(same(c:K2_GetPawn(),find(target.pawn)),"input pawn changed")end
+    local function down(name)
+        local result=c:IsInputKeyDown({KeyName=FName(name)})
+        assert(type(result)=="boolean","native key result shape")
+        return result
+    end
+    local control=down("LeftControl")or down("RightControl")
+    local alt=down("LeftAlt")or down("RightAlt")
+    local command
+    -- Sample every key even with a hidden panel: held keys cannot fire on reopening.
+    for _,key in ipairs(keys)do
+        local held=down(key_names[key])and control and alt
+        if held and not last_held[key]and not command then command=key end
+        last_held[key]=held
+    end
+    if command=="MULTIPLY"then last_key=command;cleanup("user")
+    elseif command and scene()then action(command)end
+end
+local function tick()
+    if stop_intent or phase=="stopped"or phase=="stopping"then return end
+    guarded(function()
+        ticks=ticks+1
+        if phase=="ready"then
+            stage="frame_context"
+            local current=find(target.pawn);assert(instance(current),"pawn expired")
+            local viewport,world=find(target.viewport),find(target.world)
+            assert(alive(viewport)and alive(world)and same(viewport.World,world),"current viewport world changed")
+            if ticks%30==0 then
+                local _,cp,cr=context();checkedLight(1,cp,cr);checkedLight(2,cp,cr)
+                if not scene()then
+                    if state.panel then state.panel=false;UI.show(false)end
+                    Model.resetPerf(state,now(cp),true)
+                end
+            end
+            if Model.sample(state,now(current))then refresh()end
+        end
+        stage="native_key_poll";poll_keys()
+    end)
+end
 local ok,err=pcall(function()
-    for _,name in ipairs({"StaticFindObject","FindAllOf","LoadAsset","StaticConstructObject","RegisterKeyBind","IsKeyBindRegistered",
-        "ExecuteInGameThread","LoopInGameThreadAfterFrames","CancelDelayedAction","IsValidDelayedActionHandle"})do assert(type(_G[name])=="function","missing API "..name)end
+    for _,name in ipairs({"StaticFindObject","FindAllOf","LoadAsset","StaticConstructObject","IsKeyBindRegistered",
+        "LoopInGameThreadAfterFrames","CancelDelayedAction","IsValidDelayedActionHandle"})do assert(type(_G[name])=="function","missing API "..name)end
     assert(EngineTickAvailable==true and type(EGameThreadMethod.EngineTick)=="number","EngineTick unavailable")
     local directory=SOURCE:match("^@(.+)[/\\]Scripts[/\\]main%.lua$")
     assert(directory and directory:match("[/\\]HildaSoftLightLiveTuner$"),"unexpected own script path; refuse file writes")
     settings_file=directory.."/tuner-settings.ini"
     diagnostic_file=directory.."/tuner-diagnostic.log"
     local mods={ModifierKey.CONTROL,ModifierKey.ALT}
-    local keys={"NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE","NUM_SIX","NUM_SEVEN","NUM_EIGHT","NUM_NINE","MULTIPLY"}
     for _,key in ipairs(keys)do assert(type(Key[key])=="number"and not IsKeyBindRegistered(Key[key],mods),"UE4SS chord collision/missing key "..key)end
-    for _,key in ipairs(keys)do
-        local captured=key
-        RegisterKeyBind(Key[key],mods,function()
-            if captured=="MULTIPLY"then stop_intent=true;dispatch(function()cleanup("user")end)
-            elseif not stop_intent and(phase=="armed"or captured=="NUM_ZERO"or state.panel)then
-                dispatch(function()action(captured)end)
-            end
-        end)
-    end
+    loop_handle=LoopInGameThreadAfterFrames(1,tick)
+    assert(type(loop_handle)=="number","frame handle unavailable")
 end)
-if ok then log("ARMED","start=CtrlAltNum0 stop=CtrlAltMultiply numlock=ON no_automatic_start=true")
+if ok then log("ARMED","start=CtrlAltNum0 stop=CtrlAltMultiply numlock=ON native_key_polling=true no_automatic_start=true")
 else stop_intent=true;phase="stopped";log("UNAVAILABLE",tostring(err):sub(1,200))end
