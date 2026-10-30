@@ -1,0 +1,22 @@
+{
+  "status": "PREPARED_UNTESTED",
+  "base": "1f3038992ed507b5abea1d88a9aad9ef74235a21",
+  "payload": "Scripts/main.lua",
+  "sha256": "56f0d51af6ad61ba939302250a224e65a92b3cdc9fe0a599f1e61185f1003259",
+  "baseline": "Steam1.09/build12996889 UE4.27 Win64 UE4SS v3.0.1-1181-g83330635",
+  "sourceOnlyInputs": {
+    "UHT/Engine/Public/KismetSystemLibrary.h": "012a6f76b447e313c80de465e47d52e010a88467f99bd8760cb1c9d48ce7247b",
+    "UHT/Engine/Public/HitResult.h": "7b40e3c8f22f0bda292ef4fb25c78426a14c4f44c77a42d05699cb648f522abd",
+    "UHT/Engine/Public/PrimitiveComponent.h": "694e5a2ac365cbbf04a10b7ca289fa5b5fff798b695e0a558376e39d9a7c76ec",
+    "UHT/Engine/Public/LightingChannels.h": "0108392e69c46877b47fb483ca8b1fd6a777faa0a11e1c209b4bd3a89db37506",
+    "UHT/Engine/Public/KismetMathLibrary.h": "f8c6da7271b9c4e207303dfbc701797cbc1f53cdd6ed8e58234e8d33dff99cfe",
+    "UHT/Engine/Public/SceneComponent.h": "22ecece80dd67218d87e14d99e68c87093ab5db0a6ef514b9fce00fcef36414e",
+    "UHT/Engine/Public/ActorComponent.h": "a7d91afbb5b8c2b6726c0115b2309db2c931c61514af235a820713334603fe04",
+    "ue4ss-83330635-LuaMod.cpp": "ecc9448999fdac16d4b9181d73f99aafeb8f75dd12ad921e3f7f7922d8298227",
+    "ue4ss-83330635-UE4SSProgram.cpp": "af3ae7696e304cb0613dfe5e2654c06c5e8bfde5554b9f194bcd676e897ba2c1",
+    "ue4ss-83330635-LuaUObject.cpp": "9dd81472765d66596b31fc12100d1098fbd84e5311226b4d1decc397a13e9b17",
+    "world-space/KismetSystemLibrary.cpp": "e43a4cf52e2670eab40f15e5634a79651ec7ff21760e0bb07a4b08eadc02b555",
+    "UE4.27-mirror/LightComponent.cpp": "7e0d7feda4e258dbf54352862501909c762f5dec9a8742c97106ebf41a0ea301"
+  },
+  "testLayer": "Lua5.4 mocks: policy/containment only; no native runtime proof"
+}
