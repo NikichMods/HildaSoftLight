@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-30",
+  "status": "STATIC_ONLY_NO_NEW_GAME_RUN",
+  "baseline": "Steam 1.09 / build 12996889 / UE4.27 / Windows x64 / UE4SS v3.0.1-1181-g83330635",
+  "sharedResearchRevision": "9c6d306108474feba04c9a25cb96d0ecbbd7aabd",
+  "devRulesRevision": "f7ee85645659d1d947b2b7b0636e6cf8dcdfeb1d",
+  "sha256": {
+    "UHT/Engine/Public/PointLight.h": "09aa20abccdc585ddabcd0de664110189fe0b05f94e6380df08c1771569d0e8b",
+    "UHT/Engine/Public/PointLightComponent.h": "780ed71c9ba0535b142f1e199c54a9c88ec87cf37851bdc9ea12fb1ad088affd",
+    "UHT/Engine/Public/LocalLightComponent.h": "9015a155dffa0389b00fe741564936f684a7b269c02ff26e0e063ae4c940e4a7",
+    "UHT/Engine/Public/LightComponent.h": "977447a6df9ad259f9228d5874d7812bfbd7ea0f7e0ef8928d8d4f2f90cd5a32",
+    "UHT/Engine/Public/LightComponentBase.h": "9be88d00d43aefd7654bddf0d18280d26084b462204fbfaa761095bf0362fd70",
+    "UHT/Engine/Public/SceneComponent.h": "22ecece80dd67218d87e14d99e68c87093ab5db0a6ef514b9fce00fcef36414e",
+    "UHT/Engine/Public/Actor.h": "3a3d2fbed84414f675d775dc1c8bfd60fa77f84d9137638c7e4fb552611bd8d5",
+    "UHT/Engine/Public/ActorComponent.h": "a7d91afbb5b8c2b6726c0115b2309db2c931c61514af235a820713334603fe04",
+    "UHT/Engine/Public/GameplayStatics.h": "e7db3507bb0479a24711675ea306854b56f89e94f85c44b756ba5b852cb4d2c4",
+    "UHT/Engine/Public/KismetSystemLibrary.h": "012a6f76b447e313c80de465e47d52e010a88467f99bd8760cb1c9d48ce7247b",
+    "UHT/Engine/Public/ELightUnits.h": "29745b1f7cd946e5797144c87edafb980965eb83473c5ea44f1cbfa17b6e6570",
+    "UHT/Engine/Public/EComponentMobility.h": "f73a88ba3b6524efd191d315a4a86c95e70f51a320db1a211bdabfd060333d64",
+    "UHT/Engine/Public/EAttachmentRule.h": "00567fa40635950d38270efaca1f03afc5d8729a3ba837eb2bf1e88c5cb1922d",
+    "retained-CUE4Parse/hilda_BP.json": "1e293e34eddd98dc814d85087477a7355f048ac46f60d758411c3aa7ea231a56",
+    "retained-CUE4Parse/hilda_BP--ExecuteUbergraph_hilda_BP.bytecode.json": "b6d56df1d77940724f0422c73d96dd03049f6fd5f5bf7dd6ffea06b72d8bc9f4",
+    "retained-CUE4Parse/hilda_BP--LightBeginPlay.bytecode.json": "9d7bf6fab686ad4d4be2933effcf085f9458eca9cc64445bfdbb117f1720258b",
+    "retained-CUE4Parse/hilda_BP--LightTick.bytecode.json": "6173d56bf2a4a983ec83fd9093c1f22906c98a13047004b6feb80c8470b986db",
+    "retained-CUE4Parse/hilda_BP--SwitchLightEvent.bytecode.json": "6ae22f84267c816788737fa4ebfdb894d497b5397bd398f7615b69431c59d231",
+    "retained-CUE4Parse/hilda_BP--ActiveLight.bytecode.json": "d0814978572565492ea99ea70b33d6f8bd11ad6cf4c1ebf44060967fbf6d820a",
+    "retained-CUE4Parse/hilda_BP--DeactiveLight.bytecode.json": "07050527ef09458b752f2b84846b28e33a0654d18fbce12b98f3933b13fbd905",
+    "UE4.27-mirror/ActorComponent.cpp": "d223fa5c13a9a284ad5212ecbc6225c986da11b20fb4a682243d6d5f9f6c78de",
+    "UE4.27-mirror/ActorConstruction.cpp": "36a95b4baf48735b92bf6248d6b1fd43c45c50a6bdb5a901885ed434d3ad0cd0",
+    "UE4.27-mirror/SceneComponent.cpp": "bf9b59607f875dc5704a7be6a65dc90053fba373bf6514c75807095c2a69c595",
+    "ue4ss-83330635-LuaMod.cpp": "ecc9448999fdac16d4b9181d73f99aafeb8f75dd12ad921e3f7f7922d8298227",
+    "ue4ss-83330635-LuaUObject.hpp": "1b011de1b90390abd02c9f11ebf9da7eb7b55b7d8b2c3f7040f749bd4649e157",
+    "installed-UE4SS.dll": "ce5e3c46a920cc00b2817ac61e438c9162830290379d0b5b9c4dfc2b29459290"
+  },
+  "downloadedSources": {
+    "LuaUWorld.cpp": {
+      "url": "https://raw.githubusercontent.com/UE4SS-RE/RE-UE4SS/83330635/UE4SS/src/LuaType/LuaUWorld.cpp",
+      "sha256": "18b0f4beec0593f55acae4cee5e46e696bb4187e8d4c1f0a0960d1eb5aea54d7",
+      "bytes": 5786
+    },
+    "PointLightComponent.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/Components/PointLightComponent.cpp",
+      "sha256": "bae24a91b51a0c897a4612fe466a6df95ac6decc917adc8e89c0784c7b285f97",
+      "bytes": 9606
+    },
+    "LocalLightComponent.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/Components/LocalLightComponent.cpp",
+      "sha256": "ca6b77d45f2ef91dd1f0d1e571d421085c93dc8c0dad16c08a58b463ee83e818",
+      "bytes": 5186
+    },
+    "LightComponent.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/Components/LightComponent.cpp",
+      "sha256": "7e0d7feda4e258dbf54352862501909c762f5dec9a8742c97106ebf41a0ea301",
+      "bytes": 50379
+    }
+  }
+}
