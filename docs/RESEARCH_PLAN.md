@@ -4,6 +4,10 @@
 
 Как добавить независимый слабый локальный источник света с минимальным числом предположений и безопасным удалением? Решение этапа — предпочтительный технический кандидат и точная граница первого runtime-теста. Только локальная статическая проверка и официальные источники; никакого runtime-кода, запуска игры или установки.
 
+## Итог первого этапа
+
+Этап выполнен. [Отчёт и граница следующего эксперимента](https://github.com/NikichMods/HildaSoftLight/blob/research/lighting-feasibility/docs/LIGHTING_FEASIBILITY.md) находятся в отдельной исследовательской ветке; [STATUS](STATUS.md) указывает текущую стадию. Следующая спецификация сохраняется как исходный план, а не незавершённая задача.
+
 ## Уже существующие доказательства
 
 Единственный общий источник — [Asterigos-Research/VERIFIED_RUNTIME.md](https://github.com/NikichMods/Asterigos-Research/blob/main/docs/VERIFIED_RUNTIME.md). R-004 доказывает guarded startup owning pawn Хильды, но не универсальный respawn/replacement. R-016 доказывает конкретный собственный transient WidgetComponent, регистрацию/ручную очистку; это не доказательство освещения, привязки PointLightComponent или полного level-travel lifecycle.
