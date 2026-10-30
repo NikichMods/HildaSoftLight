@@ -9,8 +9,12 @@ local HILDA="/Game/MainContent/Act/Character_BP/hilda_BP.hilda_BP_C"
 local LIGHT="/Script/Engine.PointLightComponent"
 local phase,stop_intent="armed",false
 local owns={};local target;local loop_handle;local panel_note;local settings_file
+local diagnostic_file,last_key,stage=nil,"none","startup"
 local dispatch,cleanup,begin_effects
-local function log(e,s)print("HSL_TUNER event="..e.." "..(s or "").."\n")end
+local function ascii(s)
+    return tostring(s):gsub("[^ -~]",function(c)return string.format("\\x%02X",c:byte())end)
+end
+local function log(e,s)print("HSL_TUNER event="..e.." "..ascii(s or "").."\n")end
 local function valid(o)return o~=nil and o:IsValid()end
 local function path(o)return assert(o:GetFullName():match("^[^ ]+ (.+)$"))end
 local function cls(o)return path(o:GetClass())end
@@ -46,6 +50,7 @@ local function channels(o)
 end
 local function mask(c)return(c[1]and 1 or 0)+(c[2]and 2 or 0)+(c[3]and 4 or 0)end
 local function context()
+    stage="context"
     local h,p,r,m=find(target.hud),find(target.pawn),find(target.root),find(target.mesh)
     local world,viewport=find(target.world),find(target.viewport)
     assert(instance(h)and h:IsInViewport()and instance(p)and cls(p)==HILDA and instance(r)and instance(m)
@@ -55,10 +60,26 @@ local function context()
 end
 local function scene()return game("GetInputMode",true,false)==0 and game("GetInputMode",false,true)==0 end
 local function guarded(fn)
-    local ok,e=pcall(fn)
+    local ok,e=xpcall(fn,function(problem)
+        return "phase="..phase.." stage="..stage.." last_key="..last_key
+            .." selected="..state.selected.." param="..state.param.."\n"
+            ..Model.serialize(state)..debug.traceback(tostring(problem),2)
+    end)
     if not ok then
-        log("FAILED","phase="..phase.." detail="..tostring(e):sub(1,220))
+        -- Standard Lua file I/O preserves the actual error even if the native print path drops it.
+        local recorded=false
+        if diagnostic_file then
+            local written=pcall(function()
+                local f=assert(io.open(diagnostic_file,"ab"))
+                local result,why=f:write("HSL_TUNER_FAILURE "..os.date("!%Y-%m-%dT%H:%M:%SZ").."\n"..tostring(e):sub(1,12000).."\n\n")
+                local closed=f:close();assert(result and closed,why)
+            end)
+            recorded=written
+        end
+        local detail=ascii(e):sub(1,2200)
         local clean,why=pcall(cleanup,"failure")
+        -- Emit after cleanup as a second independent native-log opportunity. Guards stay unchanged.
+        log("FAILED","recorded="..tostring(recorded).." detail="..detail)
         if not clean then log("CLEANUP_PENDING",tostring(why):sub(1,180))end
     end
 end
@@ -101,6 +122,7 @@ local function now(p)
     return t
 end
 local function checkedLight(i,p,r)
+    stage="light_check_"..i
     local c=find(owns[i]);local l=state.lights[i]
     assert(alive(c)and cls(c)==LIGHT and c:HasAnyFlags(EObjectFlags.RF_Transient)
         and same(c:GetOwner(),p)and same(c:GetOuter(),p)and same(c:GetAttachParent(),r),"own light owner/parent changed")
@@ -115,6 +137,7 @@ local function checkedLight(i,p,r)
     return c
 end
 local function apply(i)
+    stage="apply_"..i
     local _,p,r=context();local l=state.lights[i];local c=find(owns[i])
     assert(alive(c)and same(c:GetOwner(),p)and same(c:GetAttachParent(),r),"own light unavailable")
     c:SetAttenuationRadius(l.radius);c:SetTemperature(l.kelvin)
@@ -123,7 +146,12 @@ local function apply(i)
     c:SetIntensity(l.on and l.lm or 0);c:SetVisibility(l.on,false)
     checkedLight(i,p,r)
 end
-local function refresh()if state.panel then context();UI.text(Model.text(state,panel_note))end end
+local function refresh()
+    if state.panel then
+        context();stage="panel_format";local text=Model.text(state,panel_note)
+        stage="panel_text";UI.text(text)
+    end
+end
 local function shadow_allowed()
     local _,_,_,m=context()
     local q=static("KismetSystemLibrary","GetConsoleVariableIntValue","r.ShadowQuality")
@@ -242,6 +270,7 @@ local function start()
     phase="checking";check_bindings(1)
 end
 local function action(key)
+    last_key=key;stage="control"
     if stop_intent or phase=="stopped"or phase=="stopping"then return end
     if phase=="armed"then if key=="NUM_ZERO"then start()end;return end
     if phase~="ready"then return end
@@ -260,6 +289,8 @@ local function action(key)
         if l.shadow or shadow_allowed()then l.shadow=not l.shadow;state.note="Unsaved changes";step("shadow_toggle",apply,1);Model.resetPerf(state,now(p),false);log("SHADOW","front="..tostring(l.shadow).." native_CastShadows_readback=true visual_result=UNTESTED")end
     elseif key=="NUM_NINE"then save()
     end
+    log("CONTROL","key="..key.." light="..state.selected.." parameter="..Model.fields[state.param]
+        .." value="..state.lights[state.selected][Model.fields[state.param]].." panel="..tostring(state.panel))
     refresh()
 end
 local ok,err=pcall(function()
@@ -269,6 +300,7 @@ local ok,err=pcall(function()
     local directory=SOURCE:match("^@(.+)[/\\]Scripts[/\\]main%.lua$")
     assert(directory and directory:match("[/\\]HildaSoftLightLiveTuner$"),"unexpected own script path; refuse file writes")
     settings_file=directory.."/tuner-settings.ini"
+    diagnostic_file=directory.."/tuner-diagnostic.log"
     local mods={ModifierKey.CONTROL,ModifierKey.ALT}
     local keys={"NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE","NUM_SIX","NUM_SEVEN","NUM_EIGHT","NUM_NINE","MULTIPLY"}
     for _,key in ipairs(keys)do assert(type(Key[key])=="number"and not IsKeyBindRegistered(Key[key],mods),"UE4SS chord collision/missing key "..key)end

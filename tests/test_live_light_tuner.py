@@ -102,6 +102,9 @@ class Orchestration(unittest.TestCase):
             try:l.execute(code)
             except Exception:
                 print(list(l.globals().S.logs.values()));raise
+            if 'assert(contains("FAILED")' in code:
+                fault=d/'tuner-diagnostic.log'
+                assert fault.is_file() and 'HSL_TUNER_FAILURE' in fault.read_text(), 'durable failure evidence missing'
             return d.joinpath('tuner-settings.ini').read_text()if(d/'tuner-settings.ini').exists()else None
     def test_two_lights_start_independence_close_and_stop(self):
         self.case('press(100);assert(S.created==2 and S.ui_visible and S.current_queries==50);'
@@ -133,4 +136,12 @@ class Orchestration(unittest.TestCase):
         self.case('press(100);S.pawn.live=false;frame();assert(S.destroyed==2 and not S.ui_exists)')
     def test_viewport_world_change_stops_without_rebind(self):
         self.case('press(100);S.viewport.World=nil;frame();assert(S.destroyed==2 and not S.ui_exists);press(100);assert(S.created==2)')
+    def test_height_and_parameter_selection_do_not_stop(self):
+        self.case('press(100);for light=1,2 do '
+                  'for i=1,4 do press(102)end;for i=1,8 do press(106)end;'
+                  'press(108);press(102);assert(not contains("FAILED"));press(107);end;'
+                  'assert(S.created==2 and S.destroyed==0 and S.ui_visible);press(110)')
+    def test_failure_preserves_trace_and_current_state(self):
+        self.case('press(100);S.comp.Intensity=999;for i=1,30 do frame()end;'
+                  'assert(contains("FAILED") and contains("recorded=true") and S.destroyed==2 and not S.ui_exists)')
 if __name__=='__main__':unittest.main()

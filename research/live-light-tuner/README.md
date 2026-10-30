@@ -1,6 +1,6 @@
 # Live light tuner — research only
 
-**PREPARED / UNTESTED as a combined tuner.** R-018 proved one own light and manual cleanup; R-017 proved this exact independent viewport-host/text recipe. This candidate composes them with two lights, live setters, native temperature, front shadows, saved settings and a small panel. New combinations still need the user's real session. No release/version/production architecture is adopted.
+**First combined run stopped on a guard/error; root cause unknown. Diagnostic revision PREPARED/UNTESTED.** R-018 proved one own light and manual cleanup; R-017 proved this exact independent viewport-host/text recipe. This candidate composes them with two lights, live setters, native temperature, front shadows, saved settings and a small panel. New combinations still need the user's real session. No release/version/production architecture is adopted.
 
 ## Start and controls
 
@@ -64,3 +64,8 @@ There is no90s timer. The tuner runs until explicit STOP or a guarded integratio
 `tests/test_live_light_tuner.py` reuses the existing Lua5.4 fixture for bounded policy/orchestration checks: independent bounds/steps, save parsing/explicit writes, frame windows, current-key collisions, dark partial setup/cleanup, UI failure, panel-hidden no mutation, shadow gating, pending-stop/pawn-loss and no recreation. The UI is mocked in orchestration tests; they do not claim real viewport/shadow/native setter execution. No new test framework or dependency is installed.
 
 See [LIVE_TUNER.md](../../docs/LIVE_TUNER.md) for source/install identity and current evidence. Raw engine source, snapshots and machine paths remain `.local/`. The minimal next native check is this one tuner session: start, alter one value per light, hide/reopen, save, toggle Front shadows and STOP. The assistant reads the local log after the user's report. No visual acceptance is claimed in advance.
+
+
+## Diagnostic revision after first run
+
+The first panel/two-light/native-shadow run reached READY, then failed and cleaned up. The old log lost the actual error message; height or Num8 is not established as its cause. The diagnostic revision adds a failure-only own `tuner-diagnostic.log` with traceback/current values/last key and CONTROL events. It does not auto-save/reload presets and leaves native safety guards unchanged. If the tuner disappears again, report it; the assistant reads both files locally. New offline checks do not reproduce the Z/parameter-selector failure. See the owning result for exact source/log identities.
