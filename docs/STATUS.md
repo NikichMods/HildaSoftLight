@@ -7,3 +7,5 @@ UI-host/text panel, оба light create/register/attach и начальные na
 Подготовлена узкая диагностика с собственным tuner-diagnostic.log, traceback/current values/last key и ASCII-safe native log. Guards/тюнинг/раскладка не меняются.15 offline tests PASS; Z/selector regression в mocks не воспроизводится. Это не исправление ещё неизвестной первопричины.
 
 Следующий необходимый результат — один пользовательский повтор с диагностической ревизией; исполнитель сам читает error file и log. Настройки по-прежнему сохраняются только Num9, автоматического preset save нет. Production/визуальная приёмка/полный lifecycle BLOCKED.
+
+Диагностическая ревизия установлена при закрытой игре, source `55db771563dfbd5790982190931a4a9eb970eed4`; exact hashes/rollback подтверждены. Следующий run не запускался.

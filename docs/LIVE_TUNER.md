@@ -4,6 +4,10 @@
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
+## Текущая диагностическая установка
+
+Установлена closed-game диагностическая source revision `55db771563dfbd5790982190931a4a9eb970eed4`; source/installed main SHA256 `79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed`. Все исходные Mods сохранены; прежний own payload архивирован. Точный откат проверен и не выполнен. Private current-install.json обновлён; manifest `.local/live-light-tuner/diagnostic-update-20261030T091950Z/manifest.json`. Новая диагностическая ревизия в игре не выполнялась.
+
 ## Сбой первого tuner-прогона,2026-10-30
 
 **PARTIAL RUNTIME / STOPPED_ON_FAILURE. Точная причина пока неизвестна.** В12:10:55.635 МСК защитная ветка завершила тюнер: CANCEL handle1 removed=true/active=false, native destroy обоих источников, release собственного UI и CLEANED reason=failure. Это не Num8 STOP и не таймер: у Num8 только выбор параметра. Пользователь связал исчезновение панели/света с регулировкой высоты и возможным Ctrl+Alt+8; лог не записывал control sequence, поэтому конкретная клавиша/параметр не подтверждены.
