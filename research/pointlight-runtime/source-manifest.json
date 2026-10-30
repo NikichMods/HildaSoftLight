@@ -1,5 +1,4 @@
 {
-  "status": "PREPARED_UNTESTED",
   "base": "1f3038992ed507b5abea1d88a9aad9ef74235a21",
   "payload": "Scripts/main.lua",
   "sha256": "56f0d51af6ad61ba939302250a224e65a92b3cdc9fe0a599f1e61185f1003259",
@@ -18,5 +17,7 @@
     "world-space/KismetSystemLibrary.cpp": "e43a4cf52e2670eab40f15e5634a79651ec7ff21760e0bb07a4b08eadc02b555",
     "UE4.27-mirror/LightComponent.cpp": "7e0d7feda4e258dbf54352862501909c762f5dec9a8742c97106ebf41a0ea301"
   },
-  "testLayer": "Lua5.4 mocks: policy/containment only; no native runtime proof"
+  "testLayer": "Lua5.4 mocks: policy/containment only; no native runtime proof",
+  "preparationStatus": "PREPARED_UNTESTED",
+  "runtimeEvidence": "../../docs/RUNTIME_EXPERIMENT.md"
 }
