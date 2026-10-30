@@ -4,6 +4,10 @@
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
+## Текущая установка
+
+Установлена при закрытой игре source `77e585ad1416d786f53753ff10a7b372d83ddc70`, main SHA256 `b6569bddca0d428c45af868fd29f688d58509d749ac1a08205e620f89b53f56b`. Все четыре Lua совпали с Git blobs и установленными файлами. Оригинальные44 mod files и19 текущих loader/config/save inputs hash-проверены без изменений. Own failure diagnostic сохранён; предыдущий payload архивирован. Private manifest `.local/live-light-tuner/input-update-20261030T094302Z/manifest.json`; current-install обновлён, exact rollback проверен и не выполнялся. Новый кандидат в игре не запускался. Раскладка прежняя; START Ctrl+Alt+Num0, SAVE Num9, STOP Multiply. Одно действие на нажатие без автоповтора; unsaved числа прошлого run не подменяют explicit settings.
+
 ## Второй runtime run и input revision,2026-10-30
 
 Source `55db771563dfbd5790982190931a4a9eb970eed4`, main SHA256 `79bd9d32151bab3540782beb6118226b2ef84d66a3d26f441d49a06642a2f8ed`. READY12:23:56.859 МСК; failure12:31:21.653, примерно7м25с работы. Лог: `.local/live-light-tuner/run-20261030T093917Z/UE4SS.log`, SHA256 `b2b07f2e7efbf918bf1e0a3f2992733f9d5b83635bbceab698234f41f9894309`. Own diagnostic SHA256 `9e15abf49ad239deb0b079cb2a25cfca056fb05758acfef52a47b3e48aded9a9`; оба оригинала и installed payload сохранены приватно.

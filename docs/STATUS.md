@@ -7,3 +7,5 @@ Own diagnostic поймал function вместо ожидаемого UObject �
 Pinned UE4SS source показывает риск одновременного изменения hook Lua stack input-dispatch и исполнения кадрового callback. Это обоснованная гипотеза, точный interleaving не доказан. Подготовлена узкая ревизия: native клавиши и тюнер обслуживает один EngineTick loop, без RegisterKeyBind/ExecuteInGameThread handoffs. Safety guards и fault diagnostics сохранены.17 offline checks PASS; это не runtime-приёмка.
 
 Следующий шаг — обычная пользовательская настройка новым кандидатом и анализ локального лога. Числа сбойной сессии сохранены как evidence, не auto-saved preset; явное сохранение только Ctrl+Alt+Num9. Визуальная эффективность теней/FPS, стабильность новой интеграции и production остаются непринятыми. Релиз не выпускается.
+
+Closed-game installed source `77e585ad1416d786f53753ff10a7b372d83ddc70`; exact payload/rollback проверены. Runtime нового input path ожидает пользователя.
