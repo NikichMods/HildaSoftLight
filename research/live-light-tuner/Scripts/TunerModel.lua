@@ -1,13 +1,17 @@
 -- SPDX-License-Identifier: MPL-2.0
--- Pure tuner state: bounds, text and explicit non-executable settings format.
+-- Research-only unitless/exponent profile. No numeric migration from lumens.
 local M={}
-M.fields={"lm","radius","x","y","z","kelvin"}
-M.spec={lm={0,30,0.1,1,"lm"},radius={50,400,10,50,"cm"},
-    x={-150,150,2,10,"cm"},y={-150,150,2,10,"cm"},z={-100,150,2,10,"cm"},kelvin={2500,8000,100,500,"K"}}
+M.fields={"intensity","falloff","radius","x","y","z","kelvin"}
+M.spec={intensity={0,20,0.05,0.5,"Unitless"},falloff={0.1,16,0.1,1,"exponent"},
+    radius={50,400,10,50,"cm"},x={-150,150,2,10,"cm"},y={-150,150,2,10,"cm"},
+    z={-100,150,2,10,"cm"},kelvin={2500,8000,100,500,"K"}}
+local HEADER="# HildaSoftLightLiveTuner settings schema=2 mode=unitless-exponent\n"
+function M.channelMask(i)assert(i>=1 and i<=3);return i==3 and 1 or 2 end
 function M.new()
-    return {selected=1,param=1,coarse=false,panel=true,note="Not saved",lights={
-        {name="Front",on=true,shadow=false,lm=4,radius=200,x=60,y=0,z=30,kelvin=5000},
-        {name="Back",on=false,shadow=false,lm=2,radius=150,x=-60,y=0,z=30,kelvin=5000}}}
+    return {selected=1,param=1,coarse=false,panel=true,markers=true,note="Diagnostic defaults; not saved",lights={
+        {name="Character Front",on=true,shadow=false,intensity=1,falloff=2,radius=180,x=60,y=0,z=30,kelvin=5000},
+        {name="Character Back",on=false,shadow=false,intensity=0.5,falloff=2,radius=180,x=-60,y=0,z=30,kelvin=5000},
+        {name="Environment Fill",on=false,shadow=false,intensity=0.25,falloff=2,radius=200,x=0,y=0,z=30,kelvin=5000}}}
 end
 function M.adjust(s,dir)
     local key=M.fields[s.param];local b=M.spec[key];local l=s.lights[s.selected]
@@ -15,7 +19,7 @@ function M.adjust(s,dir)
     s.note="Unsaved changes"
 end
 function M.serialize(s)
-    local lines={"# HildaSoftLightLiveTuner settings schema=1"}
+    local lines={HEADER:sub(1,-2)}
     for i,l in ipairs(s.lights)do
         for _,k in ipairs(M.fields)do lines[#lines+1]=i.."."..k.."="..string.format("%.2f",l[k])end
         lines[#lines+1]=i..".on="..(l.on and "1"or"0")
@@ -24,22 +28,20 @@ function M.serialize(s)
     return table.concat(lines,"\n").."\n"
 end
 function M.parse(text)
-    assert(type(text)=="string" and #text<=4096 and text:match("^# HildaSoftLightLiveTuner settings schema=1\n"),"settings schema/size")
+    assert(type(text)=="string"and #text<=4096 and text:sub(1,#HEADER)==HEADER,"settings schema/mode/size")
     local s=M.new();local seen={};local count=0
-    for line in text:gmatch("[^\n]+")do
-        if line:sub(1,1)~="#"then
-            local i,k,v=line:match("^([12])%.([a-z]+)=([%+%-%.%d]+)$")
-            assert(i and tonumber(v),"malformed settings row")
-            local id=i.."."..k;assert(not seen[id],"duplicate setting");seen[id]=true;count=count+1;i=tonumber(i);v=tonumber(v)
-            if M.spec[k]then local b=M.spec[k];assert(v==v and v>=b[1]and v<=b[2],"setting outside bounds");s.lights[i][k]=v
-            else
-                assert((k=="on"or(k=="shadow"and i==1))and(v==0 or v==1),"unknown/invalid flag")
-                s.lights[i][k]=v==1
-            end
+    for line in text:sub(#HEADER+1):gmatch("[^\n]+")do
+        local i,k,v=line:match("^([123])%.([a-z]+)=([%+%-%.%d]+)$")
+        assert(i and tonumber(v),"malformed settings row")
+        local id=i.."."..k;assert(not seen[id],"duplicate setting");seen[id]=true;count=count+1;i=tonumber(i);v=tonumber(v)
+        if M.spec[k]then local b=M.spec[k];assert(v==v and v>=b[1]and v<=b[2],"setting outside bounds");s.lights[i][k]=v
+        else
+            assert((k=="on"or(k=="shadow"and i==1))and(v==0 or v==1),"unknown/invalid flag")
+            s.lights[i][k]=v==1
         end
     end
-    assert(count==15,"incomplete settings")
-    s.note="Loaded saved settings";return s
+    assert(count==25,"incomplete settings")
+    s.note="Loaded unitless v2 settings";return s
 end
 function M.resetPerf(s,t,clear)
     s.perf={last=nil,sum=0,n=0,start=t,settle=t+1}
@@ -63,10 +65,11 @@ end
 local function flag(b)return b and "ON"or"OFF"end
 function M.text(s,shadow_note)
     local l=s.lights[s.selected]
-    local lines={"HILDA SOFT LIGHT | RESEARCH", "Editing "..l.name.." | Front "..flag(s.lights[1].on).." / Back "..flag(s.lights[2].on)}
+    local lines={"HILDA SOFT LIGHT | RESEARCH", "Editing "..l.name.." | channel "..(s.selected==3 and"0"or"1"),
+        "F "..flag(s.lights[1].on).." / B "..flag(s.lights[2].on).." / E "..flag(s.lights[3].on).." | Unitless"}
     for i,k in ipairs(M.fields)do
         local b=M.spec[k]
-        lines[#lines+1]=(s.param==i and "> "or"  ")..k..": "..string.format(k=="lm"and"%.1f"or"%.0f",l[k]).." "..b[5]
+        lines[#lines+1]=(s.param==i and "> "or"  ")..k..": "..string.format((k=="intensity"or k=="falloff")and"%.2f"or"%.0f",l[k]).." "..b[5]
     end
     lines[#lines+1]="Front shadows: "..flag(s.lights[1].shadow).." | step "..(s.coarse and"LARGE"or"fine")
     for _,key in ipairs({"OFF","ON"})do local p=s.results and s.results[key]
@@ -74,9 +77,10 @@ function M.text(s,shadow_note)
     end
     if shadow_note then lines[#lines+1]=shadow_note end
     lines[#lines+1]=s.note
+    lines[#lines+1]="Markers F/B/E: "..flag(s.markers).." | Num / toggle"
     lines[#lines+1]="NumPad: 7 light | 8/2 parameter"
     lines[#lines+1]="4/6 value | 5 step | 1 on/off | 3 shadow"
-    lines[#lines+1]="9 save | 0 exit edit | * STOP"
+    lines[#lines+1]="9 save v2 | 0 exit edit | * STOP"
     lines[#lines+1]="Ctrl+Alt+F10: enter/exit edit"
     return table.concat(lines,"\n")
 end

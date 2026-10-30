@@ -1,10 +1,30 @@
 # Live tuner — подготовка
 
-**Режим Ctrl+Alt+F10 / обычный NumPad PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
+**Трёхкомпонентный Unitless tuner / optional UMG markers PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
-## Текущее изменение управления
+## Три источника Unitless и optional markers — текущая подготовка
+
+31 offline test PASS (27 policy/orchestration,3 projection,1 parse-only syntax check всех5Lua); native UI/projection/shadow/rendering приёмка остаётся открытой.
+
+По заданию пользователя принята схема Character Front/Back channel1 и Environment Fill channel0, non-inverse-square, Unitless. Product decisions сохранены в REQUIREMENTS; управление/границы/диагностические числа — в research/live-light-tuner/README.md. Начальные1/0.5/0.25 Unitless и exponent2 не являются переводом прежних lm или принятой художественной настройкой. Старый schema1 не читается и не перезаписывается; новый explicit profile `tuner-unitless-v2.ini` schema2/mode=unitless-exponent. У Environment нет изоляции от Hilda channel0+1, чужие каналы не меняются. Front native shadow toggle остаётся, Back/Environment без теней.
+
+### Сохранённая последняя игровая сессия
+
+До правок сохранён `.local/live-light-tuner/before-three-fill-20261030T151810Z`: raw UE4SS.log SHA256 `6823bf983af09b750941fa8250e06e35da7190c1eecb71d8637b9a8374307c78`, installed Lua/own diagnostic и snapshot.json. Git clean83ba72b, installed source4e0fe21, main SHA256 `c8db2fcd13c127972ad0f77d6261a501fb0b0dcaf4a5213eab344e30289090e2` и остальные4-file hashes совпали с previous install manifest. Текущий диагностический файл SHA256 `9e15abf49ad239deb0b079cb2a25cfca056fb05758acfef52a47b3e48aded9a9` остался от сбоя09:31UTC, нового failure не доказывает.
+
+ARMED17:26:00.464, READY17:26:49.520, последнее CONTROL17:37:36.993, Event loop end17:37:50.093 МСК. Примерно11мин после READY без нового FAILED/registry error. NUM controls/свет/UI прошли начальную оркестрацию; model mask3(0+1), floor mask1(0) подтверждены. Пользователь в новом задании сообщил, что визуально проверял работающий тюнер, но не передал подробную оценку последней сессии. SAVED и CLEANED/STOP событий нет; отдельного settings-файла нет. Закрытие процесса не подменяет manual cleanup или полный lifecycle PASS. Новый трёхкомпонентный Unitless/marker путь этим логом не проверен.
+
+### Проверенный source contract и ограничение проверки
+
+Installed UHT: PointLightComponent.SetLightFalloffExponent, ELightUnits Unitless0, WidgetLayoutLibrary.ProjectWorldLocationToWidgetPosition(controller,FVector,FVector2D&out,bool), GetViewportSize/GetViewportScale, CanvasPanelSlot.Get/SetPosition, TextBlock.SetColorAndOpacity(FSlateColor). Exact hashes в source-manifest.json; raw inputs приватны. Pinned UE4.27 component source показывает: bUseInverseSquaredFalloff=false убирает физические lm/cd/legacy16 conversion branches в ComputeLightBrightness; SetLightFalloffExponent при dynamic changes вызывает MarkRenderStateDirty. Режим и единицы задаются до FinishAddComponent, после него — native setters, не прямой mode write. У Front shadow initializer не требует inverse-square, прочие capability gates сохранены.
+
+Pinned UMG WidgetLayoutLibrary.cpp ProjectWorldLocationToWidgetPosition→WithDistance→native ScreenToViewport; SlateBlueprintLibrary.cpp использует host FGeometry внутри C++, без round-trip через Lua. Projection округляет pixel координаты; UserWidget.SetPositionInViewport(false) не делит их повторно. Собственный host0,0 расширяется до логического viewport, panel24,120; три собственных цветных F/B/E TextBlock slots центрируются на проекции реального K2_GetComponentLocation. Первое успешное out и смена DPI/size сверяются с принятым shared PlayerController.ProjectWorldLocationToScreen numeric outs; bool/finite/out shape/slot readback проверяются. SceneView::ProjectWorldToScreen требует homogeneous W>0; false скрывает marker за камерой, offscreen также скрыт. Нет occlusion promise. Новая Lua OutParm и цвет/slot интеграция остаются runtime-непроверенными. При несовпадении координат/API выключаются только markers с одним MARKERS_DISABLED, калибровка света продолжается.
+
+Divide проверен как Key.DIVIDE/FKey Divide и добавлен в known conflict audit, редактирование/7-cycle/25-field schema/три cleanup refs входят в offline проверку. Единый EngineTick path и устранение input-thread dispatch сохранены; markers не добавляют callback/Actor/компонент. Следующий sufficient native run: сравнить по одному F/B/E, изменить falloff на фиксированных остальных значениях, проверить маркеры при движении/повороте камеры и закрытии редактора, explicit SAVE и manual STOP; исполнитель затем читает локальные логи. Новый кандидат не объявлен визуально или runtime-принятым.
+
+## История: прежний двухкомпонентный режим управления
 
 По запросу пользователя принят вход/выход в редактор Ctrl+Alt+F10. Только при открытом редакторе обычный NumPad без Ctrl/Alt меняет значения, Num9 сохраняет, Multiply выполняет окончательный STOP. Num0 дополнительно закрывает редактор. При выходе свет/числа остаются для сравнения, автоматического сохранения нет. Вне редактора NumPad не изменяет тюнер; UI/фокус/игровые привязки не подменяются.
 
@@ -12,7 +32,7 @@
 
 Все чтения/редактирование по-прежнему в одном EngineTick; нет input-thread callbacks/dispatch. Raw key edge фиксируется даже при модификаторах/закрытом редакторе, поэтому отпускание Ctrl/Alt или открытие редактора при удерживаемом NumPad не вызывает отложенную правку.21 offline tests PASS, включая новый вход/выход, bare keys, закрытую панель, удержание через смену модификаторов и F10/bare-UE4SS конфликты. Следующий runtime — открыть F10, настроить обычным NumPad, закрыть/открыть, сохранить и STOP; отсутствие двойного игрового действия и новая раскладка ещё не приняты.
 
-## Текущая установка
+## История: предыдущая установка
 
 Установлена при закрытой игре source `4e0fe21b4a06b40ee5026b7796796177c2f2f69d`, main SHA256 `c8db2fcd13c127972ad0f77d6261a501fb0b0dcaf4a5213eab344e30289090e2`. Все четыре Lua совпали с Git blobs и установленными файлами. Оригинальные44 mod files и19 текущих loader/config/save inputs hash-проверены без изменений. Own failure diagnostic сохранён; предыдущий payload архивирован. Private manifest `.local/live-light-tuner/edit-mode-update-20261030T095013Z/manifest.json`; current-install обновлён, exact rollback проверен и не выполнялся. Новый кандидат в игре не запускался. Раскладка: Ctrl+Alt+F10 входит/выходит из редактора; только внутри bare NumPad, Num9 SAVE и Multiply STOP. При закрытии свет остаётся, NumPad для тюнера инертен. Одно действие на нажатие без автоповтора; unsaved числа прошлого run не подменяют explicit settings.
 

@@ -1,15 +1,11 @@
 # Статус
 
-Второй live tuner run **STOPPED_ON_FAILURE** после примерно7м25с; source55db771. [Доказательства и новая input revision](LIVE_TUNER.md). Ветка `research/live-light-tuner`, main не меняется.
+Текущий этап — research-only трёхкомпонентная Unitless/exponent калибровка в `research/live-light-tuner`; main и релизы не меняются. Принятые продуктовые решения: [REQUIREMENTS](REQUIREMENTS.md). Точные источники/сохранённые сессии/установка: [LIVE_TUNER](LIVE_TUNER.md).
 
-Own diagnostic поймал function вместо ожидаемого UObject при CDO.GetClass внутри проверки viewport/world; native log также сообщил ошибку registry function ref. Последний успешный ввод — Front X40→42cm; Z/Num8 как причина не доказаны. Cleanup обоих lights/UI/action завершился.
+Последний старый F10/bare NumPad кандидат source4e0fe21 работал примерно11мин после READY до закрытия игры без нового failure в логе. Подтверждены model0+1/floor0 и управляющие действия. Пользователь сообщил о визуальной проверке работающего тюнера, но подробного отчёта нет; SAVED/manual STOP не записаны. Это ограниченное положительное наблюдение старой интеграции, не приёмка трёх источников, теней, пресета или полного lifecycle.
 
-Pinned UE4SS source показывает риск одновременного изменения hook Lua stack input-dispatch и исполнения кадрового callback. Это обоснованная гипотеза, точный interleaving не доказан. Подготовлена узкая ревизия: native клавиши и тюнер обслуживает один EngineTick loop, без RegisterKeyBind/ExecuteInGameThread handoffs. Safety guards и fault diagnostics сохранены.21 offline checks PASS; это не runtime-приёмка.
+Новый кандидат: Character Front/Back channel1 и Environment Fill channel0, три own PointLightComponent с bUseInverseSquaredFalloff=false и Unitless до регистрации. Независимые intensity/falloff/radius/XYZ/K/on, Front shadows. Environment может влиять на Hilda channel0+1. Старый lumen/schema1 профиль не мигрирует и не перезаписывается, новый explicit schema2-файл отдельный. Начальные числа диагностические.
 
-Следующий шаг — обычная пользовательская настройка новым кандидатом и анализ локального лога. Числа сбойной сессии сохранены как evidence, не auto-saved preset; явное сохранение только Ctrl+Alt+Num9. Визуальная эффективность теней/FPS, стабильность новой интеграции и production остаются непринятыми. Релиз не выпускается.
+Optional F/B/E text markers в том же own UMG host следуют реальным world transforms. Divide toggle, только редактор, без доп. компонентов/действий; behind/offscreen скрываются. Native numeric projection/DPI/slot sanity проверяются; marker failure отключает только markers. One EngineTick/input safety/cleanup всех3 сохраняются.
 
-Closed-game installed source `77e585ad1416d786f53753ff10a7b372d83ddc70`; exact payload/rollback проверены. Runtime нового input path ожидает пользователя.
-
-По запросу пользователя управление изменено: Ctrl+Alt+F10 входит/выходит из редактирования, внутри bare NumPad; снаружи NumPad инертен для тюнера. Закрытие оставляет свет для сравнения, Multiply внутри редактора выполняет STOP. На каждом входе — known game/UE4SS conflict audit; input consumption не заявлен.21 offline checks PASS, новый runtime ожидается. См. актуальную source/install identity в LIVE_TUNER.md.
-
-Closed-game installed source `4e0fe21b4a06b40ee5026b7796796177c2f2f69d`; exact payload/rollback проверены. Runtime режима F10/bare NumPad ожидает пользователя.
+Offline policy/projection проверки не заменяют новую runtime-марshalling/rendering/визуальную приёмку. Production/полный lifecycle/художественные числа остаются открытыми. Следующий шаг — один пользовательский run нового кандидата с F/B/E/falloff/markers/SAVE/STOP, затем чтение локальных логов.

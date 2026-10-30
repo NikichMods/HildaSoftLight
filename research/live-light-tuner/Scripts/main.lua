@@ -1,5 +1,5 @@
 -- SPDX-License-Identifier: MPL-2.0
--- Research-only two-light tuner. R-018 native lights + R-017 independent text host.
+-- Research-only three-light unitless/exponent tuner. R-018 native lights + R-017 independent text host.
 local Model=require("TunerModel")
 local UI=require("TunerUI")
 local Bindings=require("KeyboardBindings")
@@ -11,6 +11,7 @@ local phase,stop_intent="armed",false
 local owns={};local target;local loop_handle;local panel_note;local settings_file
 local diagnostic_file,last_key,stage=nil,"none","startup"
 local cleanup,begin_effects,check_chords
+local markers_failed=false
 local function ascii(s)
     return tostring(s):gsub("[^ -~]",function(c)return string.format("\\x%02X",c:byte())end)
 end
@@ -34,7 +35,7 @@ local function native(module,lib,method,...)
         and valid(cdo)and cls(cdo)=="/Script/"..module.."."..lib,"missing exact API "..p)
     return f(cdo,...)
 end
-local function static(lib,method,...)return native(lib=="WidgetBlueprintLibrary"and"UMG"or"Engine",lib,method,...)end
+local function static(lib,method,...)return native((lib=="WidgetBlueprintLibrary"or lib=="WidgetLayoutLibrary")and"UMG"or"Engine",lib,method,...)end
 local function game(method,...)return native("Genesis","GameGlobal",method,...)end
 local function alive(o)return valid(o)and static("KismetSystemLibrary","IsValid",o)==true end
 local function instance(o)return alive(o)and not o:HasAnyFlags(EObjectFlags.RF_ClassDefaultObject|EObjectFlags.RF_ArchetypeObject)end
@@ -94,7 +95,7 @@ cleanup=function(reason)
         log("CANCEL","handle="..loop_handle.." removed="..tostring(removed).." active="..tostring(active))
         assert(not active,"own frame action remains active")
     end)then loop_handle=nil end
-    for i=1,2 do
+    for i=1,#state.lights do
         if owns[i]and attempt(function()
             local c=find(owns[i])
             if alive(c)then
@@ -111,7 +112,7 @@ cleanup=function(reason)
     target=nil;phase="stopped"
     log("CLEANED","reason="..reason.." own_lights=0 own_viewport=0 action_handles=0 native_key_polling=stopped no_timeout=true")
 end
-UI.bind({valid=valid,alive=alive,path=path,cls=cls,same=same,ref=ref,find=find,static=static,step=step,context=context})
+UI.bind({projectionChecked=function(size,scale,raw,out)log("MARKER_PROJECTION","size="..size.X.."x"..size.Y.." dpi="..scale.." raw="..raw.X..","..raw.Y.." widget="..out.X..","..out.Y.." out_table=true scaling_check=true visual=UNTESTED")end,valid=valid,alive=alive,path=path,cls=cls,same=same,ref=ref,find=find,static=static,step=step,context=context})
 local function now(p)
     local t=static("GameplayStatics","GetRealTimeSeconds",p)
     assert(type(t)=="number"and t==t and t>=0 and t<math.huge,"real-time clock unavailable")
@@ -122,12 +123,13 @@ local function checkedLight(i,p,r)
     local c=find(owns[i]);local l=state.lights[i]
     assert(alive(c)and cls(c)==LIGHT and c:HasAnyFlags(EObjectFlags.RF_Transient)
         and same(c:GetOwner(),p)and same(c:GetOuter(),p)and same(c:GetAttachParent(),r),"own light owner/parent changed")
-    assert(c.Mobility==2 and c.bUseInverseSquaredFalloff==true and c.IntensityUnits==2
+    assert(c.Mobility==2 and c.bUseInverseSquaredFalloff==false and c.IntensityUnits==0
+        and math.abs(c.LightFalloffExponent-l.falloff)<0.002
         and c.bUseTemperature==true and c.Temperature==l.kelvin
         and c.CastDynamicShadows==(i==1)and c.CastShadows==(i==1 and l.shadow)
-        and c.bVisible==l.on and math.abs(c.Intensity-(l.on and l.lm or 0))<0.002
+        and c.bVisible==l.on and math.abs(c.Intensity-(l.on and l.intensity or 0))<0.002
         and c.AttenuationRadius==l.radius,"own light settings changed")
-    assert(mask(channels(c))==target.channel_mask,"own channels changed")
+    assert(mask(channels(c))==Model.channelMask(i),"own channels changed")
     local rel=c.RelativeLocation
     assert(math.abs(rel.X-l.x)<0.02 and math.abs(rel.Y-l.y)<0.02 and math.abs(rel.Z-l.z)<0.02,"relative offset changed")
     return c
@@ -136,10 +138,10 @@ local function apply(i)
     stage="apply_"..i
     local _,p,r=context();local l=state.lights[i];local c=find(owns[i])
     assert(alive(c)and same(c:GetOwner(),p)and same(c:GetAttachParent(),r),"own light unavailable")
-    c:SetAttenuationRadius(l.radius);c:SetTemperature(l.kelvin)
+    c:SetAttenuationRadius(l.radius);c:SetTemperature(l.kelvin);c:SetLightFalloffExponent(l.falloff)
     c:K2_SetRelativeLocation({X=l.x,Y=l.y,Z=l.z},false,{},true)
     c:SetCastShadows(i==1 and l.shadow)
-    c:SetIntensity(l.on and l.lm or 0);c:SetVisibility(l.on,false)
+    c:SetIntensity(l.on and l.intensity or 0);c:SetVisibility(l.on,false)
     checkedLight(i,p,r)
 end
 local function refresh()
@@ -166,14 +168,14 @@ local function makeLight(i,p,r)
     assert(valid(c)and cls(c)==LIGHT,"bad light construction");owns[i]=ref(c)
     assert(instance(c)and same(c:GetOwner(),p)and same(c:GetOuter(),p)and c.CreationMethod==0,"native light ownership")
     c:SetVisibility(false,false);c:SetIntensity(0);c:SetHiddenInGame(false,false);c:SetMobility(2)
-    c.bUseInverseSquaredFalloff=true;c.CastDynamicShadows=i==1;c.CastStaticShadows=false
+    c.bUseInverseSquaredFalloff=false;c.CastDynamicShadows=i==1;c.CastStaticShadows=false
     c.bUseRayTracedDistanceFieldShadows=false
     c:SetCastShadows(false);c:SetCastVolumetricShadow(false)
     c:SetVolumetricScatteringIntensity(0);c:SetIndirectLightingIntensity(0)
-    c:SetIntensityUnits(2);c:SetAttenuationRadius(l.radius)
+    c:SetIntensityUnits(0);c:SetLightFalloffExponent(l.falloff);c:SetAttenuationRadius(l.radius)
     c:SetLightColor({R=1,G=1,B=1,A=1},true);c:SetUseTemperature(true);c:SetTemperature(l.kelvin)
     c:SetSourceRadius(0);c:SetSoftSourceRadius(0);c:SetSourceLength(0)
-    c:SetLightingChannels(target.channels[1],target.channels[2],target.channels[3])
+    c:SetLightingChannels(i==3,i~=3,false)
     assert(not c.bVisible and c.Intensity==0 and c.bAffectsWorld,"pre-registration dark guard")
     local tr=static("KismetMathLibrary","MakeTransform",{X=l.x,Y=l.y,Z=l.z},{Pitch=0,Yaw=0,Roll=0},{X=1,Y=1,Z=1})
     step("register_"..i,function()p:FinishAddComponent(c,true,tr)end)
@@ -184,8 +186,8 @@ local function save()
     if not f then state.note="SAVE FAILED: "..tostring(e):sub(1,70);log("SAVE_FAILED",state.note);return end
     local ok,why=pcall(function()assert(f:write(Model.serialize(state)));assert(f:flush())end)
     local closed,close_error=f:close();ok=ok and closed~=nil
-    state.note=ok and "Saved tuner-settings.ini"or"SAVE FAILED"
-    log(ok and "SAVED"or"SAVE_FAILED",ok and "file=own_mod/tuner-settings.ini explicit=true"or tostring(why or close_error):sub(1,120))
+    state.note=ok and "Saved tuner-unitless-v2.ini"or"SAVE FAILED"
+    log(ok and "SAVED"or"SAVE_FAILED",ok and "file=own_mod/tuner-unitless-v2.ini explicit=true"or tostring(why or close_error):sub(1,120))
 end
 begin_effects=function()
     if stop_intent or phase~="checking"then return end
@@ -195,9 +197,9 @@ begin_effects=function()
         {X=start.X,Y=start.Y,Z=start.Z-250},0,false,{p},0,hit,true,clear,clear,0)==true and hit.bBlockingHit,"no floor hit")
     assert(hit.Component and hit.Component:type()=="FWeakObjectPtr","hit shape")
     local surface=hit.Component:Get();assert(instance(surface)and not same(surface:GetOwner(),p),"wrong floor target")
-    local a,b=channels(m),channels(surface);assert(mask(a)>0 and mask(b)>0,"empty lighting channels")
-    target.channels={a[1]or b[1],a[2]or b[2],a[3]or b[3]};target.channel_mask=mask(target.channels)
-    log("CHANNELS","model="..mask(a).." floor="..mask(b).." own="..target.channel_mask
+    local a,b=channels(m),channels(surface)
+    assert(a[2]and b[1],"required model channel1 / floor channel0 unavailable")
+    log("CHANNELS","model="..mask(a).." floor="..mask(b).." character=2 environment=1 environment_can_affect_model="..tostring(a[1])
         .." floor_CastShadow="..tostring(surface.CastShadow).." floor_dynamic="..tostring(surface.bCastDynamicShadow))
     local f=io.open(settings_file,"rb")
     if f then local text=f:read(4097);f:close();local ok,loaded=pcall(Model.parse,text)
@@ -205,16 +207,16 @@ begin_effects=function()
     end
     phase="preparing";step("ui_prepare",UI.create,h,Model.text(state,panel_note));h,p,r,m=context()
     if stop_intent then cleanup("user");return end
-    makeLight(1,p,r)
-    if stop_intent then cleanup("user");return end
-    makeLight(2,p,r)
-    if stop_intent then cleanup("user");return end
+    for i=1,#state.lights do
+        makeLight(i,p,r)
+        if stop_intent then cleanup("user");return end
+    end
     if state.lights[1].shadow and not shadow_allowed()then state.lights[1].shadow=false;state.note="Saved shadows disabled by engine gate"end
-    apply(1);apply(2);phase="ready";Model.resetPerf(state,now(p),true)
-    refresh();log("READY","own_lights=2 independent_viewport=true Front=4lm_Back=2lm_if_no_saved_profile no_timeout=true handle="..loop_handle)
+    for i=1,#state.lights do apply(i)end;phase="ready";Model.resetPerf(state,now(p),true)
+    refresh();log("READY","own_lights=3 independent_viewport=true units=Unitless falloff=exponent schema=2 no_timeout=true handle="..loop_handle)
 end
 local reserved={NumPadZero=true,NumPadOne=true,NumPadTwo=true,NumPadThree=true,NumPadFour=true,
-    NumPadFive=true,NumPadSix=true,NumPadSeven=true,NumPadEight=true,NumPadNine=true,Multiply=true,F10=true}
+    NumPadFive=true,NumPadSix=true,NumPadSeven=true,NumPadEight=true,NumPadNine=true,Multiply=true,Divide=true,F10=true}
 local function audit_bindings()
     check_chords()
     context();assert(scene(),"input context changed during key preflight")
@@ -260,7 +262,7 @@ local function action(key)
     end
     if not state.panel then return end
     if key=="NUM_ZERO"then state.panel=false;UI.show(false);log("EDIT_MODE","active=false");return
-    elseif key=="NUM_SEVEN"then state.selected=3-state.selected
+    elseif key=="NUM_SEVEN"then state.selected=state.selected%#state.lights+1
     elseif key=="NUM_EIGHT"then state.param=(state.param-2)%#Model.fields+1
     elseif key=="NUM_TWO"then state.param=state.param%#Model.fields+1
     elseif key=="NUM_FIVE"then state.coarse=not state.coarse
@@ -269,6 +271,9 @@ local function action(key)
     elseif key=="NUM_THREE"then
         local l=state.lights[1]
         if l.shadow or shadow_allowed()then l.shadow=not l.shadow;state.note="Unsaved changes";step("shadow_toggle",apply,1);Model.resetPerf(state,now(p),false);log("SHADOW","front="..tostring(l.shadow).." native_CastShadows_readback=true visual_result=UNTESTED")end
+    elseif key=="DIVIDE"then
+        if markers_failed then state.note="Markers unavailable this session; see log"
+        else state.markers=not state.markers;UI.hideMarkers();log("MARKERS","enabled="..tostring(state.markers));Model.resetPerf(state,now(p),true)end
     elseif key=="NUM_NINE"then save()
     end
     log("CONTROL","key="..key.." light="..state.selected.." parameter="..Model.fields[state.param]
@@ -280,8 +285,8 @@ end
 local poll_controller,ticks,last_held=nil,0,{}
 local key_names={NUM_ZERO="NumPadZero",NUM_ONE="NumPadOne",NUM_TWO="NumPadTwo",
     NUM_THREE="NumPadThree",NUM_FOUR="NumPadFour",NUM_FIVE="NumPadFive",NUM_SIX="NumPadSix",
-    NUM_SEVEN="NumPadSeven",NUM_EIGHT="NumPadEight",NUM_NINE="NumPadNine",MULTIPLY="Multiply",F10="F10"}
-local keys={"F10","MULTIPLY","NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE",
+    NUM_SEVEN="NumPadSeven",NUM_EIGHT="NumPadEight",NUM_NINE="NumPadNine",MULTIPLY="Multiply",DIVIDE="Divide",F10="F10"}
+local keys={"F10","MULTIPLY","DIVIDE","NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE",
     "NUM_SIX","NUM_SEVEN","NUM_EIGHT","NUM_NINE"}
 check_chords=function()
     local mods={ModifierKey.CONTROL,ModifierKey.ALT}
@@ -340,7 +345,7 @@ local function tick()
             local viewport,world=find(target.viewport),find(target.world)
             assert(alive(viewport)and alive(world)and same(viewport.World,world),"current viewport world changed")
             if ticks%30==0 then
-                local _,cp,cr=context();checkedLight(1,cp,cr);checkedLight(2,cp,cr)
+                local _,cp,cr=context();for i=1,#state.lights do checkedLight(i,cp,cr)end
                 if not scene()then
                     if state.panel then state.panel=false;UI.show(false)end
                     Model.resetPerf(state,now(cp),true)
@@ -349,6 +354,22 @@ local function tick()
             if Model.sample(state,now(current))then refresh()end
         end
         stage="native_key_poll";poll_keys()
+        if phase=="ready"and not stop_intent and state.panel and state.markers and not markers_failed then
+            local ok,why=pcall(function()
+                stage="markers"
+                local points={}
+                for i=1,#state.lights do
+                    local c=find(owns[i]);assert(alive(c),"own marker light lost")
+                    points[i]=xyz(c:K2_GetComponentLocation())
+                end
+                UI.markers(find(poll_controller),points)
+            end)
+            if not ok then
+                markers_failed=true;state.markers=false;pcall(UI.hideMarkers)
+                state.note="Markers unavailable; light tuning continues"
+                log("MARKERS_DISABLED",tostring(why):sub(1,220));refresh()
+            end
+        end
     end)
 end
 local ok,err=pcall(function()
@@ -357,7 +378,7 @@ local ok,err=pcall(function()
     assert(EngineTickAvailable==true and type(EGameThreadMethod.EngineTick)=="number","EngineTick unavailable")
     local directory=SOURCE:match("^@(.+)[/\\]Scripts[/\\]main%.lua$")
     assert(directory and directory:match("[/\\]HildaSoftLightLiveTuner$"),"unexpected own script path; refuse file writes")
-    settings_file=directory.."/tuner-settings.ini"
+    settings_file=directory.."/tuner-unitless-v2.ini"
     diagnostic_file=directory.."/tuner-diagnostic.log"
     check_chords()
     loop_handle=LoopInGameThreadAfterFrames(1,tick)

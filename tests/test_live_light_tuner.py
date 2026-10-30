@@ -39,10 +39,13 @@ add_native('Genesis','GameGlobal','GetKeyByVirtualKey',function()
 end)
 add_native('Engine','GameplayStatics','GetRealTimeSeconds',function()return S.clock end)
 add_native('Engine','KismetSystemLibrary','GetConsoleVariableIntValue',function(_,name)return S.shadow_block and 0 or 1 end)
+S.mesh.LightingChannels={bChannel0=true,bChannel1=true,bChannel2=false}
+S.components={}
 S.mesh.CastShadow=true;S.mesh.bCastDynamicShadow=true
 local base_construct=StaticConstructObject
 function StaticConstructObject(...)
- local c=base_construct(...)
+ local c=base_construct(...);S.components[S.created]=c
+ function c:SetLightFalloffExponent(v)assert(S.game);self.LightFalloffExponent=v end
  function c:SetUseTemperature(v)assert(S.game);self.bUseTemperature=v end
  function c:SetTemperature(v)assert(S.game);self.Temperature=v end
  function c:K2_SetRelativeLocation(v,sweep,hit,teleport)assert(S.game and not sweep and teleport);self.RelativeLocation=v;self.offset=v end
@@ -50,19 +53,22 @@ function StaticConstructObject(...)
 end
 local finish=S.pawn.FinishAddComponent
 function S.pawn:FinishAddComponent(c,manual,t)
- if S.fail_second and S.created==2 then error('second register failure')end
+ if(S.fail_second and S.created==2)or(S.fail_third and S.created==3)then error('injected register failure')end
+ assert(c.bUseInverseSquaredFalloff==false and c.IntensityUnits==0 and c.LightFalloffExponent>0,'mode must precede registration')
  finish(self,c,manual,t);c.RelativeLocation=t.offset
 end
 local U={}
 function U.bind(a)U.api=a end
 function U.pending()return S.ui_exists or false end
 function U.create(h,text)assert(S.game);S.ui_exists=true;S.ui_visible=true;S.ui_text=text;if S.ui_fail then error('UI failure')end end
-function U.show(v)assert(S.game);S.ui_visible=v end
+function U.show(v)assert(S.game);S.ui_visible=v;S.markers_visible=false end
+function U.hideMarkers()assert(S.game);S.markers_visible=false end
+function U.markers(c,points)assert(S.game and #points==3);S.marker_calls=(S.marker_calls or 0)+1;if S.marker_fail then error("injected marker failure")end;S.marker_points=points;S.markers_visible=true end
 function U.text(v)assert(S.game);S.ui_text=v end
-function U.cleanup()assert(S.game);S.ui_exists=false;S.ui_visible=false end
+function U.cleanup()assert(S.game);S.ui_exists=false;S.ui_visible=false;S.markers_visible=false end
 package.preload.TunerUI=function()return U end
 Key={NUM_ZERO=100,NUM_ONE=101,NUM_TWO=102,NUM_THREE=103,NUM_FOUR=104,NUM_FIVE=105,
- NUM_SIX=106,NUM_SEVEN=107,NUM_EIGHT=108,NUM_NINE=109,MULTIPLY=110,F10=121}
+ NUM_SIX=106,NUM_SEVEN=107,NUM_EIGHT=108,NUM_NINE=109,MULTIPLY=110,F10=121,DIVIDE=122}
 S.controller=frameobject('/World.Controller','/Script/Genesis.GenesisPlayerController',9013)
 S.held={}
 function S.hud:GetOwningPlayer()assert(S.game);return S.controller end
@@ -77,7 +83,7 @@ function LoopInGameThreadAfterFrames(n,fn)
 end
 function frame()S.clock=S.clock+1/60;fire(S.monitor)end
 local names={'NumPadZero','NumPadOne','NumPadTwo','NumPadThree','NumPadFour','NumPadFive',
- 'NumPadSix','NumPadSeven','NumPadEight','NumPadNine','Multiply','F10'}
+ 'NumPadSix','NumPadSeven','NumPadEight','NumPadNine','Multiply','F10','Divide'}
 function press(k)
  S.held={[names[k-99]]=true};if k==111 then S.held.LeftControl=true;S.held.LeftAlt=true end;frame()
  S.held={};frame()
@@ -87,16 +93,21 @@ class ModelPolicy(unittest.TestCase):
     def setUp(self):
         self.l=LuaRuntime(unpack_returned_tuples=True);self.l.execute('M=assert(load(...))()',MODEL)
     def test_bounds_and_independent_steps(self):
-        self.l.execute('s=M.new();M.adjust(s,1);assert(s.lights[1].lm==4.1 and s.lights[2].lm==2);'
-                       's.coarse=true;M.adjust(s,-1);assert(s.lights[1].lm==3.1);'
-                       'for i=1,100 do M.adjust(s,1)end;assert(s.lights[1].lm==30);'
-                       'for i=1,100 do M.adjust(s,-1)end;assert(s.lights[1].lm==0)')
+        self.l.execute('s=M.new();M.adjust(s,1);assert(s.lights[1].intensity==1.05 and s.lights[2].intensity==0.5);'
+                       's.coarse=true;M.adjust(s,-1);assert(s.lights[1].intensity==0.55);'
+                       'for i=1,500 do M.adjust(s,1)end;assert(s.lights[1].intensity==20);'
+                       'for i=1,500 do M.adjust(s,-1)end;assert(s.lights[1].intensity==0)')
     def test_settings_roundtrip_and_corruption(self):
         self.l.execute('s=M.new();s.lights[2].on=true;s.lights[1].shadow=true;t=M.serialize(s);'
                        'r=M.parse(t);assert(r.lights[2].on and r.lights[1].shadow);'
                        'assert(not pcall(M.parse,t.."2.shadow=1\\n"));'
-                       'assert(not pcall(M.parse,t:gsub("1.lm=4.00","1.lm=999")));'
+                       'assert(not pcall(M.parse,t:gsub("1.intensity=1.00","1.intensity=999")));'
                        'assert(not pcall(M.parse,"return os.execute(1)"))')
+    def test_v2_rejects_old_units_and_markers_are_ephemeral(self):
+        self.l.execute('s=M.new();s.markers=false;t=M.serialize(s);r=M.parse(t);'
+                       'assert(#r.lights==3 and r.markers and M.channelMask(1)==2 and M.channelMask(3)==1);'
+                       'assert(not pcall(M.parse,"# HildaSoftLightLiveTuner settings schema=1\\n"));'
+                       's.param=2;M.adjust(s,-1);assert(s.lights[1].falloff==1.9 and s.lights[3].falloff==2)')
     def test_frame_measurement_settle_and_comparison(self):
         self.l.execute('s=M.new();M.resetPerf(s,0,true);for i=1,180 do M.sample(s,i/60)end;'
                        'assert(math.abs(s.results.OFF.ms-1000/60)<0.01);'
@@ -104,14 +115,15 @@ class ModelPolicy(unittest.TestCase):
                        'for i=1,120 do M.sample(s,3+i/30)end;assert(s.results.OFF and math.abs(s.results.ON.fps-30)<0.01);'
                        'M.resetPerf(s,8,true);assert(not s.results.ON and not s.results.OFF)')
 class Orchestration(unittest.TestCase):
-    def case(self,code,setup=''):
+    def case(self,code,setup='',files=None):
         temp_root=ROOT/'.local/live-light-tuner/test-temp';temp_root.mkdir(parents=True,exist_ok=True)
         with tempfile.TemporaryDirectory(dir=temp_root)as temp:
             d=pathlib.Path(temp)/'HildaSoftLightLiveTuner';(d/'Scripts').mkdir(parents=True)
             assert pathlib.Path(temp).resolve().is_relative_to(temp_root.resolve())
-            l=LuaRuntime(unpack_returned_tuples=True)
+            l=LuaRuntime(unpack_returned_tuples=True);l.globals().moddir=str(d)
+            for name,data in (files or {}).items():(d/name).write_text(data,encoding='utf-8')
             base=FIXTURE.replace('local registry={}','REG={};local registry=REG').replace('assert(self==S.comp);','')
-            base=base.replace('c.AttenuationRadius==350','(c.AttenuationRadius==200 or c.AttenuationRadius==150)').replace('n==30','n==1')
+            base=base.replace('c.AttenuationRadius==350','(c.AttenuationRadius==180 or c.AttenuationRadius==200)').replace('c.IntensityUnits==2','c.IntensityUnits==0').replace('n==30','n==1')
             l.execute(base+EXTRA)
             l.execute('local src=...;package.preload.TunerModel=function()return assert(load(src))()end',MODEL)
             l.execute('local src=...;package.preload.KeyboardBindings=function()return assert(load(src))()end',(SRC/'KeyboardBindings.lua').read_text())
@@ -123,18 +135,18 @@ class Orchestration(unittest.TestCase):
             if 'assert(contains("FAILED")' in code:
                 fault=d/'tuner-diagnostic.log'
                 assert fault.is_file() and 'HSL_TUNER_FAILURE' in fault.read_text(), 'durable failure evidence missing'
-            return d.joinpath('tuner-settings.ini').read_text()if(d/'tuner-settings.ini').exists()else None
-    def test_two_lights_start_independence_close_and_stop(self):
-        self.case('press(111);assert(S.created==2 and S.ui_visible and S.current_queries==50);'
-                  'press(107);press(101);assert(S.comp.bVisible and S.comp.Intensity==2);'
-                  'press(106);assert(S.comp.Intensity==2.1 and S.created==2);'
-                  'press(111);local before=S.comp.Intensity;press(106);assert(S.comp.Intensity==before and not S.ui_visible);'
-                  'press(111);press(110);assert(S.destroyed==2 and not S.ui_exists and contains("action_handles=0"));'
-                  'press(111);fire(S.monitor);assert(S.created==2)')
+            return d.joinpath('tuner-unitless-v2.ini').read_text()if(d/'tuner-unitless-v2.ini').exists()else None
+    def test_three_lights_start_independence_close_and_stop(self):
+        self.case('press(111);assert(S.created==3 and S.ui_visible and S.current_queries==50);'
+                  'press(107);press(101);assert(S.components[2].bVisible and S.components[2].Intensity==0.5);'
+                  'press(106);assert(S.components[2].Intensity==0.55 and S.created==3);'
+                  'press(111);local before=S.components[2].Intensity;press(106);assert(S.components[2].Intensity==before and not S.ui_visible);'
+                  'press(111);press(110);assert(S.destroyed==3 and not S.ui_exists and contains("action_handles=0"));'
+                  'press(111);fire(S.monitor);assert(S.created==3)')
     def test_explicit_save_only(self):
         self.assertIsNone(self.case('press(111);press(110)'))
         saved=self.case('press(111);press(109);assert(contains("SAVED"));press(110)')
-        self.assertIn('schema=1',saved)
+        self.assertIn('schema=2 mode=unitless-exponent',saved)
     def test_second_registration_failure_cleans_both_and_ui(self):
         self.case('press(111);assert(S.created==2 and S.destroyed==2 and not S.ui_exists and contains("CLEANED"))','S.fail_second=true')
     def test_ui_failure_before_lights_releases_host(self):
@@ -148,44 +160,68 @@ class Orchestration(unittest.TestCase):
     def test_shadow_toggle_and_timing_no_reallocation(self):
         self.case('press(111);for i=1,180 do frame()end;assert(S.ui_text:find("engine fps"));'
                   'press(103);assert(contains("event=SHADOW front=true"));for i=1,120 do frame()end;'
-                  'assert(S.created==2);press(110)')
+                  'assert(S.created==3);press(110)')
     def test_pending_start_cancel_and_pawn_loss(self):
-        self.case('press(110);assert(S.created==0);press(111);press(110);assert(S.created==2 and not S.actions[S.monitor].active)')
-        self.case('press(111);S.pawn.live=false;frame();assert(S.destroyed==2 and not S.ui_exists)')
+        self.case('press(110);assert(S.created==0);press(111);press(110);assert(S.created==3 and not S.actions[S.monitor].active)')
+        self.case('press(111);S.pawn.live=false;frame();assert(S.destroyed==3 and not S.ui_exists)')
     def test_viewport_world_change_stops_without_rebind(self):
-        self.case('press(111);S.viewport.World=nil;frame();assert(S.destroyed==2 and not S.ui_exists);press(111);assert(S.created==2)')
+        self.case('press(111);S.viewport.World=nil;frame();assert(S.destroyed==3 and not S.ui_exists);press(111);assert(S.created==3)')
     def test_height_and_parameter_selection_do_not_stop(self):
-        self.case('press(111);for light=1,2 do '
-                  'for i=1,4 do press(102)end;for i=1,8 do press(106)end;'
+        self.case('press(111);for light=1,3 do '
+                  'for i=1,5 do press(102)end;for i=1,8 do press(106)end;'
                   'press(108);press(102);assert(not contains("FAILED"));press(107);end;'
-                  'assert(S.created==2 and S.destroyed==0 and S.ui_visible);press(110)')
+                  'assert(S.created==3 and S.destroyed==0 and S.ui_visible);press(110)')
     def test_failure_preserves_trace_and_current_state(self):
-        self.case('press(111);S.comp.Intensity=999;for i=1,30 do frame()end;'
-                  'assert(contains("FAILED") and contains("recorded=true") and S.destroyed==2 and not S.ui_exists)')
+        self.case('press(111);S.components[2].Intensity=999;for i=1,30 do frame()end;'
+                  'assert(contains("FAILED") and contains("recorded=true") and S.destroyed==3 and not S.ui_exists)')
     def test_native_polling_edges_stop_and_no_dispatch(self):
-        self.case('press(111);assert(not next(S.keys));local intensity=S.comp.Intensity;local function controls()local n=0;for _,v in ipairs(S.logs)do if v:find("event=CONTROL",1,true)then n=n+1 end end;return n end;local count=controls();'
+        self.case('press(111);assert(not next(S.keys));local intensity=S.components[2].Intensity;local function controls()local n=0;for _,v in ipairs(S.logs)do if v:find("event=CONTROL",1,true)then n=n+1 end end;return n end;local count=controls();'
                   'S.held={NumPadSix=true};'
-                  'for i=1,120 do frame()end;assert(not contains("FAILED") and S.created==2 and controls()==count+1);'
+                  'for i=1,120 do frame()end;assert(not contains("FAILED") and S.created==3 and controls()==count+1);'
                   'S.held={};frame();press(110);local queries=S.current_queries;local key_reads=S.key_reads;'
-                  'for i=1,60 do frame()end;assert(S.current_queries==queries and S.key_reads==key_reads and S.destroyed==2)')
+                  'for i=1,60 do frame()end;assert(S.current_queries==queries and S.key_reads==key_reads and S.destroyed==3)')
     def test_modifiers_and_menu_do_not_edit(self):
-        self.case('press(111);local value=S.comp.Intensity;'
-                  'S.held={LeftControl=true,LeftAlt=true,NumPadSix=true};frame();assert(S.comp.Intensity==value);'
-                  'S.held={};frame();S.menu=true;press(106);assert(S.comp.Intensity==value);'
-                  'press(110);assert(S.destroyed==2)')
+        self.case('press(111);local value=S.components[2].Intensity;'
+                  'S.held={LeftControl=true,LeftAlt=true,NumPadSix=true};frame();assert(S.components[2].Intensity==value);'
+                  'S.held={};frame();S.menu=true;press(106);assert(S.components[2].Intensity==value);'
+                  'press(110);assert(S.destroyed==3)')
     def test_edit_toggle_plain_keys_and_closed_panel_are_inert(self):
         self.case('press(106);press(100);assert(S.created==0);press(111);'
-                  'assert(S.ui_visible);press(107);press(101);local value=S.comp.Intensity;'
-                  'press(106);assert(S.comp.Intensity>value);press(111);value=S.comp.Intensity;'
-                  'press(106);press(110);assert(S.comp.Intensity==value and S.destroyed==0 and not S.ui_visible);'
+                  'assert(S.ui_visible);press(107);press(101);local value=S.components[2].Intensity;'
+                  'press(106);assert(S.components[2].Intensity>value);press(111);value=S.components[2].Intensity;'
+                  'press(106);press(110);assert(S.components[2].Intensity==value and S.destroyed==0 and not S.ui_visible);'
                   'press(111);assert(S.ui_visible);press(100);assert(not S.ui_visible);press(111);press(110)')
     def test_held_key_does_not_fire_after_modifiers_released(self):
-        self.case('press(111);press(107);press(101);local value=S.comp.Intensity;'
+        self.case('press(111);press(107);press(101);local value=S.components[2].Intensity;'
                   'S.held={LeftControl=true,NumPadSix=true};frame();'
-                  'S.held={NumPadSix=true};frame();assert(S.comp.Intensity==value);'
-                  'S.held={};frame();press(106);assert(S.comp.Intensity>value);press(110)')
+                  'S.held={NumPadSix=true};frame();assert(S.components[2].Intensity==value);'
+                  'S.held={};frame();press(106);assert(S.components[2].Intensity>value);press(110)')
     def test_f10_game_binding_conflict_blocks_start(self):
         self.case('press(111);assert(S.created==0 and contains("game key collision"))','S.mapping_collision="F10"')
     def test_bare_ue4ss_collision_disarms(self):
         self.case('assert(contains("UNAVAILABLE") and not S.monitor)','S.bare_collision=true')
+    def test_three_modes_channels_and_live_falloff(self):
+        self.case('press(111);assert(#S.components==3 and S.foreign_writes==0);'
+                  'for i,c in ipairs(S.components)do assert(c.IntensityUnits==0 and not c.bUseInverseSquaredFalloff);'
+                  'assert(c.LightingChannels.bChannel0==(i==3) and c.LightingChannels.bChannel1==(i~=3));end;'
+                  'press(102);press(106);assert(math.abs(S.components[1].LightFalloffExponent-2.1)<0.001);'
+                  'press(107);press(107);press(101);assert(S.components[3].Intensity==0.25 and S.components[3].bVisible);'
+                  'press(106);assert(math.abs(S.components[3].LightFalloffExponent-2.1)<0.001 and S.created==3);press(110)')
+    def test_old_lumen_profile_is_preserved_and_never_loaded(self):
+        old='# HildaSoftLightLiveTuner settings schema=1\n1.lm=29.00\n'
+        self.case('press(111);assert(S.components[1].Intensity==1);'
+                  'local f=assert(io.open(moddir.."/tuner-settings.ini","rb"));local old=f:read("*a");f:close();'
+                  'assert(old:find("1.lm=29.00",1,true));press(109);'
+                  'local f=assert(io.open(moddir.."/tuner-settings.ini","rb"));assert(f:read("*a")==old);f:close();press(110)',files={'tuner-settings.ini':old})
+    def test_third_registration_failure_cleans_all_partial_objects(self):
+        self.case('press(111);assert(S.created==3 and S.destroyed==3 and not S.ui_exists)','S.fail_third=true')
+    def test_markers_toggle_follow_close_and_failure_is_optional(self):
+        self.case('press(111);assert(S.markers_visible and S.marker_points[3].X==S.position.X);'
+                  'press(112);assert(not S.markers_visible);press(112);assert(S.markers_visible);'
+                  'press(111);local calls=S.marker_calls;frame();assert(not S.markers_visible and S.marker_calls==calls);'
+                  'press(111);assert(S.markers_visible);press(110);assert(not S.markers_visible)')
+        self.case('press(111);assert(S.created==3 and S.destroyed==0 and contains("MARKERS_DISABLED") and not contains("event=FAILED"));'
+                  'local calls=S.marker_calls;press(112);frame();assert(S.marker_calls==calls);press(110)','S.marker_fail=true')
+    def test_missing_character_channel_blocks_without_foreign_writes(self):
+        self.case('press(111);assert(S.created==0 and S.foreign_writes==0 and contains("required model channel1"))','S.mesh.LightingChannels.bChannel1=false')
 if __name__=='__main__':unittest.main()

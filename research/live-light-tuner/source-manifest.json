@@ -1,11 +1,12 @@
 {
-  "preparationStatus": "EDIT_MODE_F10_BARE_KEYPAD_PREPARED_RUNTIME_UNTESTED",
+  "preparationStatus": "THREE_UNIT_LESS_EXPONENT_LIGHTS_OPTIONAL_MARKERS_RUNTIME_UNTESTED",
   "base": "d01606534066cf0ac99edc3a6041fd4b92feda3e",
   "payloadSha256": {
-    "main.lua": "c8db2fcd13c127972ad0f77d6261a501fb0b0dcaf4a5213eab344e30289090e2",
-    "TunerModel.lua": "366d104603b9f37d5c2e7450ab13d511c972afd63c4169c4d9e4a1c585a832fa",
-    "TunerUI.lua": "66539f0777c22fd8b60b1650cf6a16b01e8d362abeeef1c0c862001d7f2e266a",
-    "KeyboardBindings.lua": "ef35fff0ebff4e327328f3c3a803717e8b8d3087e0841ddc847b9bef7f83725f"
+    "KeyboardBindings.lua": "ef35fff0ebff4e327328f3c3a803717e8b8d3087e0841ddc847b9bef7f83725f",
+    "main.lua": "6568c84e4a65197172b41b1550c72d6b6aeb7ade97326b35d2c45d1650b19ed6",
+    "TunerModel.lua": "924634e2efad655bdbf4e84a8b1b15700dffe7cb6029110fcd278e06f0739462",
+    "TunerProjection.lua": "f132f0fba45446e31e1b03d82f281203e05f76bd9b6dd0d40a3d7af6c6b31d38",
+    "TunerUI.lua": "1fd568c4852aa325707e3cd41ed5663cbc63482589f3f736375c702065e53adf"
   },
   "sourceOnlyInputs": {
     "UHT/Engine/Public/LightComponent.h": "977447a6df9ad259f9228d5874d7812bfbd7ea0f7e0ef8928d8d4f2f90cd5a32",
@@ -24,7 +25,12 @@
     "UHT/Engine/Public/GameViewportClient.h": "cf6b8852e463c4978187af1d9c158ace96b0e40f7a26e1677fea538df65f3a0e",
     "UHT/UMG/Public/Widget.h": "ff39fb27aa8fd5d8332e5185d97f6a293672fe7be40acba38bf92da73e0147a9",
     "UHT/Engine/Public/Controller.h": "b2e17e480e261a6133719d4202099ebb0d1e6f5f3408b06682a499609e809980",
-    "UHT/Engine/Public/PlayerController.h": "d7a66f69ddb2fefbdf775c7eac10a5ac6678552d00d2a871f0f6a16f6d2d30ee"
+    "UHT/Engine/Public/PlayerController.h": "d7a66f69ddb2fefbdf775c7eac10a5ac6678552d00d2a871f0f6a16f6d2d30ee",
+    "UHT/Engine/Public/PointLightComponent.h": "780ed71c9ba0535b142f1e199c54a9c88ec87cf37851bdc9ea12fb1ad088affd",
+    "UHT/Engine/Public/ELightUnits.h": "29745b1f7cd946e5797144c87edafb980965eb83473c5ea44f1cbfa17b6e6570",
+    "UHT/UMG/Public/WidgetLayoutLibrary.h": "45ecdc333b1056638bebdfa5a1f8c06b34ab6643e700e5e4dc4deeb400b87907",
+    "UHT/SlateCore/Public/SlateColor.h": "ef6105c240a4a4a6b740f6b09e33a8df4a4aa208b5c8dfb7b098f2f9f180c8be",
+    "UHT/SlateCore/Public/ESlateColorStylingMode.h": "1a28aa3dd6815f588c38c13952f077c5581be840eb4ef5eba44267f5f8a16717"
   },
   "UE4.27Sources": {
     "GameplayStatics.cpp": {
@@ -58,14 +64,51 @@
     "RendererScene.cpp": {
       "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Renderer/Private/RendererScene.cpp",
       "sha256": "67951524ad9ed395c6f44f6ac68ed74a58575498d8049db4339fb68f15b4defa"
+    },
+    "WidgetLayoutLibrary.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/UMG/Private/WidgetLayoutLibrary.cpp",
+      "sha256": "73918a5c4d9a71e60b5b50654e2f7100b63bc1e3e6f00c4cc64e077a307fe961"
+    },
+    "SlateBlueprintLibrary.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/UMG/Private/SlateBlueprintLibrary.cpp",
+      "sha256": "d78b05c8d4877f4b36f999c87abcefab4b3f580dfe42d56a2b9c27eb430db8a9"
+    },
+    "UserWidget.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/UMG/Private/UserWidget.cpp",
+      "sha256": "c6314536ce689491e49f6ddb5ab0d2fd4be3f20f2a31775845938ca3d797ca08"
+    },
+    "PlayerController.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/PlayerController.cpp",
+      "sha256": "3f19bbc5c7706a25bdbd2db756291ab8a87da8378f983ffa0af94c078de330bc"
+    },
+    "SceneView.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/SceneView.cpp",
+      "sha256": "a181adc85ba79858486b87e51ceabba1e65a1ad3ea5cff257c324a245ff39590"
+    },
+    "PointLightComponent.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/Components/PointLightComponent.cpp",
+      "sha256": "bae24a91b51a0c897a4612fe466a6df95ac6decc917adc8e89c0784c7b285f97"
+    },
+    "LocalLightComponent.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/Components/LocalLightComponent.cpp",
+      "sha256": "ca6b77d45f2ef91dd1f0d1e571d421085c93dc8c0dad16c08a58b463ee83e818"
     }
   },
   "inputIdentifiersSourceSha256": "5b91709cf157d0e9adb543a820ea6e12cd2425b069a54ab0bd52d009eac0ef81",
   "acceptedReuse": {
     "light": "Asterigos-Research R-018 / HildaSoftLight 9a449cf",
     "viewportHost": "Asterigos-Research R-017 / IIP 6e9ebdd",
-    "nativeInput": "Asterigos-Research R-014 / CombatHUD: owning controller + IsInputKeyDown(FKey); new polling-chord integration untested"
+    "nativeInput": "Asterigos-Research R-014 / CombatHUD: owning controller + IsInputKeyDown(FKey); new polling-chord integration untested",
+    "numericOutProjection": "Asterigos-Research: bounded PlayerController.ProjectWorldLocationToScreen FVector2D out tables; WidgetLayoutLibrary integration new/unproven"
   },
   "runtimeEvidence": "../../docs/LIVE_TUNER.md",
-  "UE4SSGetWorldSource": "https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/LuaType/LuaAActor.cpp#L49"
+  "UE4SSGetWorldSource": "https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/LuaType/LuaAActor.cpp#L49",
+  "settingsProfile": {
+    "schema": 2,
+    "mode": "unitless-exponent",
+    "file": "tuner-unitless-v2.ini",
+    "oldSchema1": "preserved; never read/migrated/overwritten",
+    "markerState": "ephemeral"
+  },
+  "sharedResearchSnapshot": "83615158047a6960e2aafc1072dc6c277c8e9147"
 }
