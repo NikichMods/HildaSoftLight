@@ -13,7 +13,7 @@
 
 Не менять глобальную экспозицию/гамму/тонмаппинг, Glimmer, игровые эффекты, частицы, настройки, сохранения или другие моды. Собственный свет должен быть независимо отключаемым и очищаемым. Интенсивность, радиус, цвет, положение и окончательная архитектура не утверждены.
 
-Текущий разрешённый этап — первый ограниченный research-only PointLightComponent runtime-эксперимент в `research/pointlight-runtime`; см. docs/RUNTIME_EXPERIMENT.md. Ручные on/off/cleanup и90s timeout, одна попытка создания за процесс. Установка только при закрытой игре с проверенным manifest/откатом; пользователь запускает игру сам. Не переходить к production, Actor fallback, level travel/death/respawn/cutscene tests или художественной настройке. Готовой версии/релиза нет.
+Текущий разрешённый этап — research-only live tuner в `research/live-light-tuner`; см. docs/LIVE_TUNER.md. Два независимых собственных PointLightComponent Front/Back, минимальная текстовая панель, клавиатура, live bounded настройки и явное сохранение только в файл мода. Front имеет native shadow toggle; Back без теней. Начальные4/2лм — диагностические. Нет90s timeout; ручной STOP/потеря target отменяют own callback и удаляют свои компоненты/UI. Установка только closed-game с проверенным откатом; игру запускает/закрывает пользователь. Не переходить к production, Actor fallback, Coherent/pak/framework, respawn/travel/cutscene support или выпуску релиза.
 
 ## Git и приёмка
 

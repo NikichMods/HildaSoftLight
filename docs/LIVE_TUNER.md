@@ -1,0 +1,30 @@
+# Live tuner — подготовка
+
+**PREPARED / UNTESTED combined candidate**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
+
+[Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
+
+## Выбор минимального механизма
+
+R-018 действительно подтвердил собственный transient PointLightComponent, on/off, следование и native manual cleanup. До кода повторно прочитан R-017 и точный IIP userwidget-host/probe: отдельный PostionItemUMG_BP_C, собственный WidgetTree/TextBlock, первый Construct Hidden, последующий показ и RemoveFromParent уже имеют принятый runtime результат. Поэтому новая панель использует этот путь, а не игровой HUD, PrintString в Shipping, Coherent, pak или новый UI framework. Текущий tuner-композит ещё требует проверки, но отдельная инфраструктура для UI не обоснована.
+
+Два источника Front/Back независимы, имеют explicit Lumens/inverse-square, live native setters, начальные4/2лм, поля radius/XYZ/temperature. Front shadows — отдельный native SetCastShadows с readonly gates. Панель одна, клавиатурные Ctrl+Alt NumPad команды не потребляют ввод. Текущие50 известных keyboard virtual IDs проверяются scalar native resolver до появления объектов; новая array marshaling схема не вводится.
+
+## Статические доказательства и нижние проверки
+
+- DevRules checkout `f7ee85645659d1d947b2b7b0636e6cf8dcdfeb1d` не менялся относительно предыдущего этапа; применены engineering, Git, local installed-runtime и live-calibration contracts.
+- Установленный UE4SS83330635 LuaMod.cpp523ff действительно регистрирует NUM_ZERO…NUM_NINE/MULTIPLY;5995 задаёт @filename для safe own file path. UHT содержит SetTemperature/SetUseTemperature, K2_SetRelativeLocation, UMG panel APIs и read-only CVar getters.
+- UE4.27 LightComponent.cpp: SetCastShadows52ff→MarkRenderStateDirty; SetTemperature934ff/SetUseTemperature954ff→native light update, GetColoredLightBrightness1353ff применяет temperature multiplier. ShadowSetup.cpp проверяет dynamic-shadow flags, GetShadowQuality, project point-light support иdesktop path; RendererSettings.h702 связывает project flag с r.SupportPointLightWholeSceneShadows. GetConsoleVariableIntValue не изменяет CVar и возвращает0 при отсутствии — такой результат блокирует shadow request. Установленный GameUserSettings sg.ShadowQuality2 сам по себе не доказывает итоговые runtime CVars; tuner читает их нативно.
+- UE4.27 GameplayStatics.cpp2281 возвращает World.GetRealTimeSeconds. Счётчик даёт реальные интервалы EngineTick, не CPU os.clock/дилатированный gameplay delta и не display/generated FPS. VSync/cap не меняются.
+- Lua5.4 syntax и13 policy/orchestration tests PASS. Ранее sandbox не позволял доступ внутри временных директорий; вне этого ограничения те же offline tests выполнены успешно. Native UMG в этих тестах mocked; новых runtime API/теней/визуальной приёмки они не доказывают.
+
+## Установка и runtime-граница
+
+Перед установкой требуется закрытая игра, проверка loader/settings/active mods, private backup/hash manifest и совпадение payload с опубликованным Git blob. Добавляется только собственная папка HildaSoftLightLiveTuner с четырьмя Lua и enabled.txt; mods.txt/другие моды/настройки/сохранения не редактируются. Старый HildaSoftLightRuntimeProbe уже снят после принятого прогона; не включать его одновременно.
+
+Фактическое установленное состояние будет записано после проверки. Private `.local/live-light-tuner/current-install.json` — точка входа в установку/откат. Откат при закрытой игре переносит только проверенную собственную папку за пределы Mods, сохраняя explicit tuner-settings.ini. Не возвращать старые игровые SaveGames поверх пользовательского прогресса.
+
+В игре пока не выполнялись: этот двухкомпонентный setup, новая панель/раскладка, live edits/temperature/save write, Front shadow effect, engine-frame counter и combined cleanup. Передача устанавливает минимального кандидата для такого прогона; пользователь сам запускает игру. Нет90s timer и автоматического запуска. На material blocker — cleanup/stop, без Actor fallback или большого UI workaround.
+
+
+Контекст дополнительно связывает pawn.GetWorld() с текущим GameEngine.GameViewport.World, а не только старым живым pawn. Pinned UE4SS [LuaAActor.cpp49ff](https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/LuaType/LuaAActor.cpp#L49) предоставляет GetWorld; поля GameViewport/World отражены в текущих Engine.h/GameViewportClient.h. Их runtime-применимость в составе тюнера остаётся gate; offline world-change test подтверждает fail-closed/no-rebind логику. После синхронной загрузки UI-класса target заново разрешается до Create; stop-intent проверяется до появления света.

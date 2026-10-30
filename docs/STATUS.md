@@ -1,11 +1,9 @@
 # Статус
 
-Первый PointLight runtime-прогон разобран: **BOUNDED RUNTIME PASS — manual path**,2026-10-30. [Точные доказательства и ограничения](RUNTIME_EXPERIMENT.md). Ветка `research/pointlight-runtime`, main не меняется.
+Подготовлен research-only live tuner, **PREPARED / UNTESTED combined candidate**,2026-10-30. Ветка `research/live-light-tuner`, [текущие доказательства/установка](LIVE_TUNER.md), [управление/параметры](../research/live-light-tuner/README.md). Main не меняется.
 
-Создание собственного transient PointLightComponent, dark setup, FinishAddComponent/root attachment, чтение каналов модели/пола, ON→OFF→ON, следование и ручная native logical destruction прошли без ошибок пробы. Monitor/timeout handles отменены; пользователь подтвердил видимый световой эффект.123 guarded проверок — не FPS-бенчмарк.
+Переиспользованы runtime R-018 для собственного света и R-017 для независимой viewport text UI. Два transient компонента Front/Back имеют независимые параметры и on/off; стартовые4/2лм, Back OFF, тени OFF. Front shadows идут через native SetCastShadows с readonly условиями. Панель и50-key current mapping preflight не меняют игровой ввод/настройки. Явное сохранение пишет только файл тюнера.
 
-Автоматический90s timeout не выполнялся: пользователь остановил пробу примерно через58.81с. Glimmer independence и отдельная визуальная оценка модели/геометрии/полного исчезновения не подтверждены. Полный level/pawn lifecycle не проверен. **Production gate BLOCKED**, архитектура и параметры не приняты.
+Нижние проверки: Lua5.4 syntax и13 policy/orchestration tests PASS. Новый composite UI/двухкомпонентный lifecycle, temperature/save/native shadows и frame counter требуют пользовательского runtime-теста. Тонкая настройка/архитектура не приняты. **Production gate BLOCKED**, релизной версии нет.
 
-Лог/установленный исходник сохранены приватно. Собственный loader payload снят при закрытой игре;40 исходных файлов Mods восстановлены по составу и SHA256, чужие моды/настройки не изменялись. Текущее состояние сохранений после игры сохранено, отката SaveGames нет.
-
-Этот этап завершён в пределах технического manual-path результата. Дизайн/настройка обсуждаются отдельно по указанию пользователя; новый код, установка и дополнительные игровые сценарии сейчас не выполняются.
+Следующий шаг — безопасно установить точный опубликованный кандидат при закрытой игре, затем открыть панель Ctrl+Alt+Num0 и проверить управление, shadows и ручной STOP по инструкции. Таймера90с нет. Потеря pawn/контекста прекращает исследование; полноценная поддержка respawn/travel/cutscenes не реализуется.

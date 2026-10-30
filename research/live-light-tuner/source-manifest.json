@@ -1,0 +1,67 @@
+{
+  "preparationStatus": "PREPARED_UNTESTED_COMBINED_TUNER",
+  "base": "d01606534066cf0ac99edc3a6041fd4b92feda3e",
+  "payloadSha256": {
+    "main.lua": "2b98e0e688cd2e318768bbe41cbdbf7298f2990e0dc9adaca158cf776c3a6166",
+    "TunerModel.lua": "d9e1d33f1d5d1d008a69019dfb9099cc1855d625eb7287ef54b430625b4c1eab",
+    "TunerUI.lua": "66539f0777c22fd8b60b1650cf6a16b01e8d362abeeef1c0c862001d7f2e266a",
+    "KeyboardBindings.lua": "6464c6e60ec2914ac611ecef559c8250e2d60a14f3c7d0d76d11d00d666c3434"
+  },
+  "sourceOnlyInputs": {
+    "UHT/Engine/Public/LightComponent.h": "977447a6df9ad259f9228d5874d7812bfbd7ea0f7e0ef8928d8d4f2f90cd5a32",
+    "UHT/Engine/Public/LightComponentBase.h": "9be88d00d43aefd7654bddf0d18280d26084b462204fbfaa761095bf0362fd70",
+    "UHT/Engine/Public/SceneComponent.h": "22ecece80dd67218d87e14d99e68c87093ab5db0a6ef514b9fce00fcef36414e",
+    "UHT/Engine/Public/GameplayStatics.h": "e7db3507bb0479a24711675ea306854b56f89e94f85c44b756ba5b852cb4d2c4",
+    "UHT/Engine/Public/KismetSystemLibrary.h": "012a6f76b447e313c80de465e47d52e010a88467f99bd8760cb1c9d48ce7247b",
+    "UHT/Engine/Public/PrimitiveComponent.h": "694e5a2ac365cbbf04a10b7ca289fa5b5fff798b695e0a558376e39d9a7c76ec",
+    "UHT/UMG/Public/UserWidget.h": "29e92168a9044effb8105e672b30ae4b6728b140e572c60fcffcc617b16f5a58",
+    "UHT/UMG/Public/TextBlock.h": "c4607c650ddee830072df6de78d8e9f0a4a64694ab682bf0bf349f129952468e",
+    "UHT/UMG/Public/CanvasPanelSlot.h": "a19ab247143232d2db8aead86bdb3ec9bdbf8c7a4922a92702893f4a54e10f06",
+    "UHT/UMG/Public/WidgetBlueprintLibrary.h": "7b888f8de1e8209a0d2fcb400c118dd0be410e3d30e85ec75993ea54c8afad38",
+    "ue4ss-83330635-LuaMod.cpp": "ecc9448999fdac16d4b9181d73f99aafeb8f75dd12ad921e3f7f7922d8298227",
+    "world-space/KismetSystemLibrary.cpp": "e43a4cf52e2670eab40f15e5634a79651ec7ff21760e0bb07a4b08eadc02b555",
+    "UHT/Engine/Public/Engine.h": "13ef7469ea7f3f9a3d6dd4bad0660902d0f7e357758c0137a5cd65ce633679b8",
+    "UHT/Engine/Public/GameViewportClient.h": "cf6b8852e463c4978187af1d9c158ace96b0e40f7a26e1677fea538df65f3a0e"
+  },
+  "UE4.27Sources": {
+    "GameplayStatics.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/GameplayStatics.cpp",
+      "sha256": "e90d7d1196a10e6a875d80632c183a4d4ea2d870aa745f2c3d27880a4bed3588"
+    },
+    "ShadowSetup.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Renderer/Private/ShadowSetup.cpp",
+      "sha256": "49e28af4ce7fd27308d87ad73bbc72923d8c0dfd190c0144502c95e9b87808ed"
+    },
+    "ShadowRendering.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Renderer/Private/ShadowRendering.cpp",
+      "sha256": "ffb8dce1b83f839175b802190b75a6c799ac106c635260ed94f419558380777f"
+    },
+    "RenderUtils.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/RenderCore/Private/RenderUtils.cpp",
+      "sha256": "164365c391d7b3df7169ae7898be3bfbb0190df6b31d7a375b50371f6ba3fee6"
+    },
+    "SceneUtils.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Private/SceneUtils.cpp",
+      "sha256": "05ad19abce1837546f8104e4060635874cc3218e502e2e8847e5d46d6948a758"
+    },
+    "InputCoreTypes.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/InputCore/Private/InputCoreTypes.cpp",
+      "sha256": "a156a935d48ad266da3c8b4e3231ea2352dd1ca0802df8e67a1e39e4fdf16dfb"
+    },
+    "RendererSettings.h": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Engine/Classes/Engine/RendererSettings.h",
+      "sha256": "9a6c079b9837b39c233e84287caa0c1df2cf5bfa9c8f725abb184d42b13e4fcf"
+    },
+    "RendererScene.cpp": {
+      "url": "https://raw.githubusercontent.com/AlexMercer-MA/UnrealEngine-4.27/306a7e9f7fb53f14c2cb3bfd3854ad906710a17e/Engine/Source/Runtime/Renderer/Private/RendererScene.cpp",
+      "sha256": "67951524ad9ed395c6f44f6ac68ed74a58575498d8049db4339fb68f15b4defa"
+    }
+  },
+  "inputIdentifiersSourceSha256": "5b91709cf157d0e9adb543a820ea6e12cd2425b069a54ab0bd52d009eac0ef81",
+  "acceptedReuse": {
+    "light": "Asterigos-Research R-018 / HildaSoftLight 9a449cf",
+    "viewportHost": "Asterigos-Research R-017 / IIP 6e9ebdd"
+  },
+  "runtimeEvidence": "../../docs/LIVE_TUNER.md",
+  "UE4SSGetWorldSource": "https://github.com/UE4SS-RE/RE-UE4SS/blob/83330635/UE4SS/src/LuaType/LuaAActor.cpp#L49"
+}
