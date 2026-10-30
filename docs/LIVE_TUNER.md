@@ -22,7 +22,13 @@ R-018 действительно подтвердил собственный tra
 
 Перед установкой требуется закрытая игра, проверка loader/settings/active mods, private backup/hash manifest и совпадение payload с опубликованным Git blob. Добавляется только собственная папка HildaSoftLightLiveTuner с четырьмя Lua и enabled.txt; mods.txt/другие моды/настройки/сохранения не редактируются. Старый HildaSoftLightRuntimeProbe уже снят после принятого прогона; не включать его одновременно.
 
-Фактическое установленное состояние будет записано после проверки. Private `.local/live-light-tuner/current-install.json` — точка входа в установку/откат. Откат при закрытой игре переносит только проверенную собственную папку за пределы Mods, сохраняя explicit tuner-settings.ini. Не возвращать старые игровые SaveGames поверх пользовательского прогресса.
+**Установлен при закрытой игре, ещё не запускался.** Payload source commit `9099d05161b0369e2912dd90cacad0782f772673`; каждый из четырёх installed Lua побайтно совпал с Git blob и [source manifest](../research/live-light-tuner/source-manifest.json). Narrow .gitattributes закрепляет LF у этих payload-файлов; первая попытка установки обнаружила CRLF/LF mismatch до изменения игры, затем identity была исправлена/повторно проверена.
+
+Добавлено ровно5 файлов собственного каталога, сохранены baseline snapshot/предыдущий лог. Все44 исходных файлов Mods и19 protected inputs (UE4SS DLL/settings, Engine.ini, GameUserSettings.ini, текущие SaveGames) сохранили SHA256; mods.txt и активные CombatHUD/SoulsEnemyHUD не изменялись. Чужие неактивные probes не включались. Runtime IsKeyBindRegistered и current mapping preflight выполнятся только при пользовательском запуске; offline-проверка активных Lua не обнаружила RegisterKeyBind.
+
+Private install manifest: `.local/live-light-tuner/install-20261030T085733Z/manifest.json`. **Готовность отката проверена, откат не выполнен**: exact own folder/known source hashes и baseline Mods совпали. Private helper `.local/live-light-tuner/preparation-tools/install_tuner.py` имеет режимы verify-rollback/rollback; оба требуют закрытой игры, rollback сохраняет пользовательский tuner-settings.ini в архиве. Код payload после установки не менялся.
+
+ Private `.local/live-light-tuner/current-install.json` — точка входа в установку/откат. Откат при закрытой игре переносит только проверенную собственную папку за пределы Mods, сохраняя explicit tuner-settings.ini. Не возвращать старые игровые SaveGames поверх пользовательского прогресса.
 
 В игре пока не выполнялись: этот двухкомпонентный setup, новая панель/раскладка, live edits/temperature/save write, Front shadow effect, engine-frame counter и combined cleanup. Передача устанавливает минимального кандидата для такого прогона; пользователь сам запускает игру. Нет90s timer и автоматического запуска. На material blocker — cleanup/stop, без Actor fallback или большого UI workaround.
 
