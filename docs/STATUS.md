@@ -4,8 +4,10 @@
 
 Own diagnostic поймал function вместо ожидаемого UObject при CDO.GetClass внутри проверки viewport/world; native log также сообщил ошибку registry function ref. Последний успешный ввод — Front X40→42cm; Z/Num8 как причина не доказаны. Cleanup обоих lights/UI/action завершился.
 
-Pinned UE4SS source показывает риск одновременного изменения hook Lua stack input-dispatch и исполнения кадрового callback. Это обоснованная гипотеза, точный interleaving не доказан. Подготовлена узкая ревизия: native клавиши и тюнер обслуживает один EngineTick loop, без RegisterKeyBind/ExecuteInGameThread handoffs. Safety guards и fault diagnostics сохранены.17 offline checks PASS; это не runtime-приёмка.
+Pinned UE4SS source показывает риск одновременного изменения hook Lua stack input-dispatch и исполнения кадрового callback. Это обоснованная гипотеза, точный interleaving не доказан. Подготовлена узкая ревизия: native клавиши и тюнер обслуживает один EngineTick loop, без RegisterKeyBind/ExecuteInGameThread handoffs. Safety guards и fault diagnostics сохранены.21 offline checks PASS; это не runtime-приёмка.
 
 Следующий шаг — обычная пользовательская настройка новым кандидатом и анализ локального лога. Числа сбойной сессии сохранены как evidence, не auto-saved preset; явное сохранение только Ctrl+Alt+Num9. Визуальная эффективность теней/FPS, стабильность новой интеграции и production остаются непринятыми. Релиз не выпускается.
 
 Closed-game installed source `77e585ad1416d786f53753ff10a7b372d83ddc70`; exact payload/rollback проверены. Runtime нового input path ожидает пользователя.
+
+По запросу пользователя управление изменено: Ctrl+Alt+F10 входит/выходит из редактирования, внутри bare NumPad; снаружи NumPad инертен для тюнера. Закрытие оставляет свет для сравнения, Multiply внутри редактора выполняет STOP. На каждом входе — known game/UE4SS conflict audit; input consumption не заявлен.21 offline checks PASS, новый runtime ожидается. См. актуальную source/install identity в LIVE_TUNER.md.

@@ -62,12 +62,13 @@ function U.text(v)assert(S.game);S.ui_text=v end
 function U.cleanup()assert(S.game);S.ui_exists=false;S.ui_visible=false end
 package.preload.TunerUI=function()return U end
 Key={NUM_ZERO=100,NUM_ONE=101,NUM_TWO=102,NUM_THREE=103,NUM_FOUR=104,NUM_FIVE=105,
- NUM_SIX=106,NUM_SEVEN=107,NUM_EIGHT=108,NUM_NINE=109,MULTIPLY=110}
+ NUM_SIX=106,NUM_SEVEN=107,NUM_EIGHT=108,NUM_NINE=109,MULTIPLY=110,F10=121}
 S.controller=frameobject('/World.Controller','/Script/Genesis.GenesisPlayerController',9013)
 S.held={}
 function S.hud:GetOwningPlayer()assert(S.game);return S.controller end
 function S.controller:K2_GetPawn()assert(S.game);return S.pawn end
 function S.controller:IsInputKeyDown(key)assert(S.game);S.key_reads=(S.key_reads or 0)+1;return S.held[key.KeyName]==true end
+function IsKeyBindRegistered(k,mods)return S.collision or(S.bare_collision and k==106 and mods==nil)or false end
 function RegisterKeyBind()error('input-thread callbacks forbidden')end
 function ExecuteInGameThread()error('cross-thread handoff forbidden')end
 function LoopInGameThreadAfterFrames(n,fn)
@@ -76,9 +77,9 @@ function LoopInGameThreadAfterFrames(n,fn)
 end
 function frame()S.clock=S.clock+1/60;fire(S.monitor)end
 local names={'NumPadZero','NumPadOne','NumPadTwo','NumPadThree','NumPadFour','NumPadFive',
- 'NumPadSix','NumPadSeven','NumPadEight','NumPadNine','Multiply'}
+ 'NumPadSix','NumPadSeven','NumPadEight','NumPadNine','Multiply','F10'}
 function press(k)
- S.held={LeftControl=true,LeftAlt=true,[names[k-99]]=true};frame()
+ S.held={[names[k-99]]=true};if k==111 then S.held.LeftControl=true;S.held.LeftAlt=true end;frame()
  S.held={};frame()
 end
 '''
@@ -124,52 +125,67 @@ class Orchestration(unittest.TestCase):
                 assert fault.is_file() and 'HSL_TUNER_FAILURE' in fault.read_text(), 'durable failure evidence missing'
             return d.joinpath('tuner-settings.ini').read_text()if(d/'tuner-settings.ini').exists()else None
     def test_two_lights_start_independence_close_and_stop(self):
-        self.case('press(100);assert(S.created==2 and S.ui_visible and S.current_queries==50);'
+        self.case('press(111);assert(S.created==2 and S.ui_visible and S.current_queries==50);'
                   'press(107);press(101);assert(S.comp.bVisible and S.comp.Intensity==2);'
                   'press(106);assert(S.comp.Intensity==2.1 and S.created==2);'
-                  'press(100);local before=S.comp.Intensity;press(106);assert(S.comp.Intensity==before and not S.ui_visible);'
-                  'press(110);assert(S.destroyed==2 and not S.ui_exists and contains("action_handles=0"));'
-                  'press(100);fire(S.monitor);assert(S.created==2)')
+                  'press(111);local before=S.comp.Intensity;press(106);assert(S.comp.Intensity==before and not S.ui_visible);'
+                  'press(111);press(110);assert(S.destroyed==2 and not S.ui_exists and contains("action_handles=0"));'
+                  'press(111);fire(S.monitor);assert(S.created==2)')
     def test_explicit_save_only(self):
-        self.assertIsNone(self.case('press(100);press(110)'))
-        saved=self.case('press(100);press(109);assert(contains("SAVED"));press(110)')
+        self.assertIsNone(self.case('press(111);press(110)'))
+        saved=self.case('press(111);press(109);assert(contains("SAVED"));press(110)')
         self.assertIn('schema=1',saved)
     def test_second_registration_failure_cleans_both_and_ui(self):
-        self.case('press(100);assert(S.created==2 and S.destroyed==2 and not S.ui_exists and contains("CLEANED"))','S.fail_second=true')
+        self.case('press(111);assert(S.created==2 and S.destroyed==2 and not S.ui_exists and contains("CLEANED"))','S.fail_second=true')
     def test_ui_failure_before_lights_releases_host(self):
-        self.case('press(100);assert(S.created==0 and not S.ui_exists and contains("CLEANED"))','S.ui_fail=true')
+        self.case('press(111);assert(S.created==0 and not S.ui_exists and contains("CLEANED"))','S.ui_fail=true')
     def test_current_binding_conflict_prevents_any_effect(self):
-        self.case('press(100);assert(S.created==0 and not S.ui_exists and contains("game key collision"))','S.mapping_collision="NumPadSix"')
+        self.case('press(111);assert(S.created==0 and not S.ui_exists and contains("game key collision"))','S.mapping_collision="NumPadSix"')
     def test_ue4ss_conflict_disarms(self):
         self.case('assert(contains("UNAVAILABLE") and not S.keys[100])','S.collision=true')
     def test_shadow_gate_does_not_change_game_setting(self):
-        self.case('press(100);press(103);assert(contains("SHADOW_CAPS") and not contains("event=SHADOW "));press(110)','S.shadow_block=true')
+        self.case('press(111);press(103);assert(contains("SHADOW_CAPS") and not contains("event=SHADOW "));press(110)','S.shadow_block=true')
     def test_shadow_toggle_and_timing_no_reallocation(self):
-        self.case('press(100);for i=1,180 do frame()end;assert(S.ui_text:find("engine fps"));'
+        self.case('press(111);for i=1,180 do frame()end;assert(S.ui_text:find("engine fps"));'
                   'press(103);assert(contains("event=SHADOW front=true"));for i=1,120 do frame()end;'
                   'assert(S.created==2);press(110)')
     def test_pending_start_cancel_and_pawn_loss(self):
-        self.case('press(110);press(100);assert(S.created==0 and not S.actions[S.monitor].active)')
-        self.case('press(100);S.pawn.live=false;frame();assert(S.destroyed==2 and not S.ui_exists)')
+        self.case('press(110);assert(S.created==0);press(111);press(110);assert(S.created==2 and not S.actions[S.monitor].active)')
+        self.case('press(111);S.pawn.live=false;frame();assert(S.destroyed==2 and not S.ui_exists)')
     def test_viewport_world_change_stops_without_rebind(self):
-        self.case('press(100);S.viewport.World=nil;frame();assert(S.destroyed==2 and not S.ui_exists);press(100);assert(S.created==2)')
+        self.case('press(111);S.viewport.World=nil;frame();assert(S.destroyed==2 and not S.ui_exists);press(111);assert(S.created==2)')
     def test_height_and_parameter_selection_do_not_stop(self):
-        self.case('press(100);for light=1,2 do '
+        self.case('press(111);for light=1,2 do '
                   'for i=1,4 do press(102)end;for i=1,8 do press(106)end;'
                   'press(108);press(102);assert(not contains("FAILED"));press(107);end;'
                   'assert(S.created==2 and S.destroyed==0 and S.ui_visible);press(110)')
     def test_failure_preserves_trace_and_current_state(self):
-        self.case('press(100);S.comp.Intensity=999;for i=1,30 do frame()end;'
+        self.case('press(111);S.comp.Intensity=999;for i=1,30 do frame()end;'
                   'assert(contains("FAILED") and contains("recorded=true") and S.destroyed==2 and not S.ui_exists)')
     def test_native_polling_edges_stop_and_no_dispatch(self):
-        self.case('press(100);assert(not next(S.keys));local intensity=S.comp.Intensity;local function controls()local n=0;for _,v in ipairs(S.logs)do if v:find("event=CONTROL",1,true)then n=n+1 end end;return n end;local count=controls();'
-                  'S.held={LeftControl=true,LeftAlt=true,NumPadSix=true};'
+        self.case('press(111);assert(not next(S.keys));local intensity=S.comp.Intensity;local function controls()local n=0;for _,v in ipairs(S.logs)do if v:find("event=CONTROL",1,true)then n=n+1 end end;return n end;local count=controls();'
+                  'S.held={NumPadSix=true};'
                   'for i=1,120 do frame()end;assert(not contains("FAILED") and S.created==2 and controls()==count+1);'
                   'S.held={};frame();press(110);local queries=S.current_queries;local key_reads=S.key_reads;'
                   'for i=1,60 do frame()end;assert(S.current_queries==queries and S.key_reads==key_reads and S.destroyed==2)')
-    def test_missing_modifiers_and_menu_do_not_edit(self):
-        self.case('press(100);local value=S.comp.Intensity;'
-                  'S.held={NumPadSix=true};frame();assert(S.comp.Intensity==value);'
+    def test_modifiers_and_menu_do_not_edit(self):
+        self.case('press(111);local value=S.comp.Intensity;'
+                  'S.held={LeftControl=true,LeftAlt=true,NumPadSix=true};frame();assert(S.comp.Intensity==value);'
                   'S.held={};frame();S.menu=true;press(106);assert(S.comp.Intensity==value);'
                   'press(110);assert(S.destroyed==2)')
+    def test_edit_toggle_plain_keys_and_closed_panel_are_inert(self):
+        self.case('press(106);press(100);assert(S.created==0);press(111);'
+                  'assert(S.ui_visible);press(107);press(101);local value=S.comp.Intensity;'
+                  'press(106);assert(S.comp.Intensity>value);press(111);value=S.comp.Intensity;'
+                  'press(106);press(110);assert(S.comp.Intensity==value and S.destroyed==0 and not S.ui_visible);'
+                  'press(111);assert(S.ui_visible);press(100);assert(not S.ui_visible);press(111);press(110)')
+    def test_held_key_does_not_fire_after_modifiers_released(self):
+        self.case('press(111);press(107);press(101);local value=S.comp.Intensity;'
+                  'S.held={LeftControl=true,NumPadSix=true};frame();'
+                  'S.held={NumPadSix=true};frame();assert(S.comp.Intensity==value);'
+                  'S.held={};frame();press(106);assert(S.comp.Intensity>value);press(110)')
+    def test_f10_game_binding_conflict_blocks_start(self):
+        self.case('press(111);assert(S.created==0 and contains("game key collision"))','S.mapping_collision="F10"')
+    def test_bare_ue4ss_collision_disarms(self):
+        self.case('assert(contains("UNAVAILABLE") and not S.monitor)','S.bare_collision=true')
 if __name__=='__main__':unittest.main()

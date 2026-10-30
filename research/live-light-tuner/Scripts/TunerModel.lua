@@ -74,9 +74,10 @@ function M.text(s,shadow_note)
     end
     if shadow_note then lines[#lines+1]=shadow_note end
     lines[#lines+1]=s.note
-    lines[#lines+1]="CtrlAlt+Num: 7 light | 8/2 parameter"
+    lines[#lines+1]="NumPad: 7 light | 8/2 parameter"
     lines[#lines+1]="4/6 value | 5 step | 1 on/off | 3 shadow"
-    lines[#lines+1]="9 save | 0 hide/show | * STOP"
+    lines[#lines+1]="9 save | 0 exit edit | * STOP"
+    lines[#lines+1]="Ctrl+Alt+F10: enter/exit edit"
     return table.concat(lines,"\n")
 end
 return M

@@ -1,9 +1,9 @@
 {
-  "preparationStatus": "SINGLE_ENGINETICK_INPUT_PREPARED_RUNTIME_UNTESTED",
+  "preparationStatus": "EDIT_MODE_F10_BARE_KEYPAD_PREPARED_RUNTIME_UNTESTED",
   "base": "d01606534066cf0ac99edc3a6041fd4b92feda3e",
   "payloadSha256": {
-    "main.lua": "b6569bddca0d428c45af868fd29f688d58509d749ac1a08205e620f89b53f56b",
-    "TunerModel.lua": "d9e1d33f1d5d1d008a69019dfb9099cc1855d625eb7287ef54b430625b4c1eab",
+    "main.lua": "c8db2fcd13c127972ad0f77d6261a501fb0b0dcaf4a5213eab344e30289090e2",
+    "TunerModel.lua": "366d104603b9f37d5c2e7450ab13d511c972afd63c4169c4d9e4a1c585a832fa",
     "TunerUI.lua": "66539f0777c22fd8b60b1650cf6a16b01e8d362abeeef1c0c862001d7f2e266a",
     "KeyboardBindings.lua": "ef35fff0ebff4e327328f3c3a803717e8b8d3087e0841ddc847b9bef7f83725f"
   },

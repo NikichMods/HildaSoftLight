@@ -1,12 +1,16 @@
 # Live tuner — подготовка
 
-**Второй run локализовал ошибку Lua bridge; исправление input dispatch PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
+**Режим Ctrl+Alt+F10 / обычный NumPad PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
-## Текущая установка
+## Текущее изменение управления
 
-Установлена при закрытой игре source `77e585ad1416d786f53753ff10a7b372d83ddc70`, main SHA256 `b6569bddca0d428c45af868fd29f688d58509d749ac1a08205e620f89b53f56b`. Все четыре Lua совпали с Git blobs и установленными файлами. Оригинальные44 mod files и19 текущих loader/config/save inputs hash-проверены без изменений. Own failure diagnostic сохранён; предыдущий payload архивирован. Private manifest `.local/live-light-tuner/input-update-20261030T094302Z/manifest.json`; current-install обновлён, exact rollback проверен и не выполнялся. Новый кандидат в игре не запускался. Раскладка прежняя; START Ctrl+Alt+Num0, SAVE Num9, STOP Multiply. Одно действие на нажатие без автоповтора; unsaved числа прошлого run не подменяют explicit settings.
+По запросу пользователя принят вход/выход в редактор Ctrl+Alt+F10. Только при открытом редакторе обычный NumPad без Ctrl/Alt меняет значения, Num9 сохраняет, Multiply выполняет окончательный STOP. Num0 дополнительно закрывает редактор. При выходе свет/числа остаются для сравнения, автоматического сохранения нет. Вне редактора NumPad не изменяет тюнер; UI/фокус/игровые привязки не подменяются.
+
+Проверены pinned UE4SS83330635 Key.F10 и IsKeyBindRegistered(integer)/IsKeyBindRegistered(integer,modifiers), InputCore F10 и имена NumPad. На старте проверяется Ctrl+Alt+F10 и bare NumPad, на каждом входе в редактирование повторяются эти проверки и50 live virtual mappings, включая отсутствие F10. Предыдущий принятый технический preflight не обнаружил NumPad в этих50 mappings. Обнаруженный конфликт останавливает кандидат с cleanup. Это не доказывает отсутствие скрытых engine/debug команд: узкий native consumption здесь не доказан, ввод не поглощается. Global input block либо неподтверждённый input hook ради гипотетического конфликта не добавляются.
+
+Все чтения/редактирование по-прежнему в одном EngineTick; нет input-thread callbacks/dispatch. Raw key edge фиксируется даже при модификаторах/закрытом редакторе, поэтому отпускание Ctrl/Alt или открытие редактора при удерживаемом NumPad не вызывает отложенную правку.21 offline tests PASS, включая новый вход/выход, bare keys, закрытую панель, удержание через смену модификаторов и F10/bare-UE4SS конфликты. Следующий runtime — открыть F10, настроить обычным NumPad, закрыть/открыть, сохранить и STOP; отсутствие двойного игрового действия и новая раскладка ещё не приняты.
 
 ## Второй runtime run и input revision,2026-10-30
 

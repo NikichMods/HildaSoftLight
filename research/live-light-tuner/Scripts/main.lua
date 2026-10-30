@@ -10,7 +10,7 @@ local LIGHT="/Script/Engine.PointLightComponent"
 local phase,stop_intent="armed",false
 local owns={};local target;local loop_handle;local panel_note;local settings_file
 local diagnostic_file,last_key,stage=nil,"none","startup"
-local cleanup,begin_effects
+local cleanup,begin_effects,check_chords
 local function ascii(s)
     return tostring(s):gsub("[^ -~]",function(c)return string.format("\\x%02X",c:byte())end)
 end
@@ -214,18 +214,17 @@ begin_effects=function()
     refresh();log("READY","own_lights=2 independent_viewport=true Front=4lm_Back=2lm_if_no_saved_profile no_timeout=true handle="..loop_handle)
 end
 local reserved={NumPadZero=true,NumPadOne=true,NumPadTwo=true,NumPadThree=true,NumPadFour=true,
-    NumPadFive=true,NumPadSix=true,NumPadSeven=true,NumPadEight=true,NumPadNine=true,Multiply=true}
-local function check_bindings(index)
-    if stop_intent or phase~="checking"then return end
+    NumPadFive=true,NumPadSix=true,NumPadSeven=true,NumPadEight=true,NumPadNine=true,Multiply=true,F10=true}
+local function audit_bindings()
+    check_chords()
     context();assert(scene(),"input context changed during key preflight")
-    for i=index,#Bindings do
+    for i=1,#Bindings do
         local key=game("GetKeyByVirtualKey",FName(Bindings[i]))
         assert(type(key)=="table"and key.KeyName~=nil,"current key resolver shape")
         local name=key.KeyName:ToString()
         assert(not reserved[name],"game key collision: "..Bindings[i].."="..name)
     end
     log("INPUT_CLEAR","keyboard_virtual_rows="..#Bindings.." native_key_polling=true")
-    begin_effects()
 end
 local function start()
     local h,p
@@ -235,7 +234,7 @@ local function start()
             if instance(pawn)and cls(pawn)==HILDA then assert(not h,"ambiguous gameplay HUD");h,p=candidate,pawn end
         end
     end
-    if not p or not scene()then log("WAIT_GAMEPLAY","press_CtrlAltNum0_after_loading=true");return end
+    if not p or not scene()then log("WAIT_GAMEPLAY","press_CtrlAltF10_after_loading=true");return end
     local r,m=p:K2_GetRootComponent(),p.Mesh
     assert(instance(r)and instance(m)and same(m:GetOwner(),p),"root/mesh unavailable")
     local engine
@@ -244,18 +243,24 @@ local function start()
     local world=p:GetWorld()
     assert(alive(viewport)and alive(world)and same(viewport.World,world),"current viewport/world unavailable")
     target={hud=ref(h),pawn=ref(p),root=ref(r),mesh=ref(m),world=ref(world),viewport=ref(viewport)}
-    phase="checking";check_bindings(1)
+    phase="checking";audit_bindings();begin_effects()
 end
 local function action(key)
     last_key=key;stage="control"
     if stop_intent or phase=="stopped"or phase=="stopping"then return end
-    if phase=="armed"then if key=="NUM_ZERO"then start()end;return end
+    if phase=="armed"then if key=="F10"then start()end;return end
     if phase~="ready"then return end
     local _,p=context()
     if not scene()then if state.panel then state.panel=false;UI.show(false)end;return end
-    if key=="NUM_ZERO"then state.panel=not state.panel;UI.show(state.panel);if state.panel then Model.resetPerf(state,now(p),true)end;refresh();return end
+    if key=="F10"then
+        if not state.panel then audit_bindings()end
+        state.panel=not state.panel;UI.show(state.panel)
+        if state.panel then Model.resetPerf(state,now(p),true)end
+        log("EDIT_MODE","active="..tostring(state.panel));refresh();return
+    end
     if not state.panel then return end
-    if key=="NUM_SEVEN"then state.selected=3-state.selected
+    if key=="NUM_ZERO"then state.panel=false;UI.show(false);log("EDIT_MODE","active=false");return
+    elseif key=="NUM_SEVEN"then state.selected=3-state.selected
     elseif key=="NUM_EIGHT"then state.param=(state.param-2)%#Model.fields+1
     elseif key=="NUM_TWO"then state.param=state.param%#Model.fields+1
     elseif key=="NUM_FIVE"then state.coarse=not state.coarse
@@ -275,9 +280,16 @@ end
 local poll_controller,ticks,last_held=nil,0,{}
 local key_names={NUM_ZERO="NumPadZero",NUM_ONE="NumPadOne",NUM_TWO="NumPadTwo",
     NUM_THREE="NumPadThree",NUM_FOUR="NumPadFour",NUM_FIVE="NumPadFive",NUM_SIX="NumPadSix",
-    NUM_SEVEN="NumPadSeven",NUM_EIGHT="NumPadEight",NUM_NINE="NumPadNine",MULTIPLY="Multiply"}
-local keys={"MULTIPLY","NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE",
+    NUM_SEVEN="NumPadSeven",NUM_EIGHT="NumPadEight",NUM_NINE="NumPadNine",MULTIPLY="Multiply",F10="F10"}
+local keys={"F10","MULTIPLY","NUM_ZERO","NUM_ONE","NUM_TWO","NUM_THREE","NUM_FOUR","NUM_FIVE",
     "NUM_SIX","NUM_SEVEN","NUM_EIGHT","NUM_NINE"}
+check_chords=function()
+    local mods={ModifierKey.CONTROL,ModifierKey.ALT}
+    assert(type(Key.F10)=="number"and not IsKeyBindRegistered(Key.F10,mods),"UE4SS chord collision/missing key F10")
+    for _,key in ipairs(keys)do
+        if key~="F10"then assert(type(Key[key])=="number"and not IsKeyBindRegistered(Key[key]),"UE4SS bare keypad collision/missing key "..key)end
+    end
+end
 local function poll_keys()
     if phase=="armed"and(ticks==1 or ticks%30==0)then
         poll_controller=nil
@@ -310,11 +322,12 @@ local function poll_keys()
     local command
     -- Sample every key even with a hidden panel: held keys cannot fire on reopening.
     for _,key in ipairs(keys)do
-        local held=down(key_names[key])and control and alt
-        if held and not last_held[key]and not command then command=key end
+        local held=down(key_names[key])
+        local eligible=key=="F10"and control and alt or key~="F10"and not control and not alt
+        if held and eligible and not last_held[key]and not command then command=key end
         last_held[key]=held
     end
-    if command=="MULTIPLY"then last_key=command;cleanup("user")
+    if command=="MULTIPLY"and phase=="ready"and state.panel then last_key=command;cleanup("user")
     elseif command and scene()then action(command)end
 end
 local function tick()
@@ -346,10 +359,9 @@ local ok,err=pcall(function()
     assert(directory and directory:match("[/\\]HildaSoftLightLiveTuner$"),"unexpected own script path; refuse file writes")
     settings_file=directory.."/tuner-settings.ini"
     diagnostic_file=directory.."/tuner-diagnostic.log"
-    local mods={ModifierKey.CONTROL,ModifierKey.ALT}
-    for _,key in ipairs(keys)do assert(type(Key[key])=="number"and not IsKeyBindRegistered(Key[key],mods),"UE4SS chord collision/missing key "..key)end
+    check_chords()
     loop_handle=LoopInGameThreadAfterFrames(1,tick)
     assert(type(loop_handle)=="number","frame handle unavailable")
 end)
-if ok then log("ARMED","start=CtrlAltNum0 stop=CtrlAltMultiply numlock=ON native_key_polling=true no_automatic_start=true")
+if ok then log("ARMED","edit=CtrlAltF10 stop=NumMultiply_while_editing numlock=ON native_key_polling=true no_automatic_start=true")
 else stop_intent=true;phase="stopped";log("UNAVAILABLE",tostring(err):sub(1,200))end
