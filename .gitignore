@@ -1,0 +1,15 @@
+# Private machine evidence and proprietary inputs
+.local/
+.env
+.env.*
+*.log
+*.pak
+*.utoc
+*.ucas
+*.uasset
+*.umap
+*.dll
+*.exe
+UHTHeaderDump/
+__pycache__/
+.vs/
