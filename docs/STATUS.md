@@ -1,13 +1,9 @@
 # Статус
 
-Текущий этап — research-only трёхкомпонентная Unitless/exponent калибровка в `research/live-light-tuner`; main и релизы не меняются. Принятые продуктовые решения: [REQUIREMENTS](REQUIREMENTS.md). Точные источники/сохранённые сессии/установка: [LIVE_TUNER](LIVE_TUNER.md).
+**PARTIAL_RUNTIME / NATIVE_CRASH; сравнительный прогон подготовлен.** [Точная диагностика и граница](NATIVE_CRASH_2026-10-30.md). Ветка research/live-light-tuner, main/релизы без изменений.
 
-Последний старый F10/bare NumPad кандидат source4e0fe21 работал примерно11мин после READY до закрытия игры без нового failure в логе. Подтверждены model0+1/floor0 и управляющие действия. Пользователь сообщил о визуальной проверке работающего тюнера, но подробного отчёта нет; SAVED/manual STOP не записаны. Это ограниченное положительное наблюдение старой интеграции, не приёмка трёх источников, теней, пресета или полного lifecycle.
+Трёхкомпонентный source b392c3c работал23м44с после READY до EXCEPTION_ACCESS_VIOLATION в UE4SS на GameThread. Native light setup/parameter actions и marker numeric projection/DPI gate прошли; новый visual preset, полноценные shadow/marker appearance и lifecycle не приняты. Конкретный виновник и причина native crash не установлены. Подробности прежних этапов: [LIVE_TUNER](LIVE_TUNER.md).
 
-Новый кандидат: Character Front/Back channel1 и Environment Fill channel0, три own PointLightComponent с bUseInverseSquaredFalloff=false и Unitless до регистрации. Независимые intensity/falloff/radius/XYZ/K/on, Front shadows. Environment может влиять на Hilda channel0+1. Старый lumen/schema1 профиль не мигрирует и не перезаписывается, новый explicit schema2-файл отдельный. Начальные числа диагностические.
+Сохранены CrashContext/minidump/логи/exact payload. Последние несохранённые числа восстановлены в приватный schema2-файл, не применены. Установленный код тюнера не менялся, исправление не заявлено.31 прежняя offline-проверка остаётся evidence оркестрации, не гарантией отсутствия native вылета.
 
-Optional F/B/E text markers в том же own UMG host следуют реальным world transforms. Divide toggle, только редактор, без доп. компонентов/действий; behind/offscreen скрываются. Native numeric projection/DPI/slot sanity проверяются; marker failure отключает только markers. One EngineTick/input safety/cleanup всех3 сохраняются.
-
-Offline policy/projection проверки не заменяют новую runtime-марshalling/rendering/визуальную приёмку. Production/полный lifecycle/художественные числа остаются открытыми. Следующий шаг — один пользовательский run нового кандидата с F/B/E/falloff/markers/SAVE/STOP, затем чтение локальных логов.
-
-Установлен closed-game research source `b392c3c952d8bbb10ae197886b3e1b8c71422168`;5Lua exact hashes и rollback подтверждены.31 offline checks PASS. Runtime Unitless/channel split/markers/SAVE/STOP нового кандидата ожидает пользователя.
+По прямому согласию пользователя для одного теста временно отключён только SoulsEnemyHUD (mods.txt1→0), его исходники/остальные моды/настройки/сохранения не заменялись. Активны CombatHUD и HildaSoftLightLiveTuner. Точный возврат prior mods.txt подготовлен и hash-проверен; private current-install содержит comparisonManifest. После следующего пользовательского run сначала сохранить логи, при закрытой игре восстановить активность SoulsEnemyHUD, затем оценить результат. До обычной установки/rollback сначала снять эту activity exception. Это не постоянная смена состава модов и не доказанное исправление.

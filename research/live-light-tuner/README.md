@@ -1,6 +1,6 @@
 # Three-light live tuner — research only
 
-PREPARED / RUNTIME UNTESTED. Own PointLightComponent construction/registration reuses R-018, viewport host reuses R-017, single-EngineTick input avoids the previous input-thread handoff. Current source/install evidence and prior sessions: [LIVE_TUNER](../../docs/LIVE_TUNER.md). No release, artistic preset or production acceptance.
+PARTIAL_RUNTIME / NATIVE_CRASH, cause unproved. [Crash evidence and authorized one-run comparison](../../docs/NATIVE_CRASH_2026-10-30.md). Installed source remains unchanged; only SoulsEnemyHUD activity is temporarily disabled with exact return prepared. Own PointLightComponent construction/registration reuses R-018, viewport host reuses R-017, single-EngineTick input avoids the previous input-thread handoff. Current source/install evidence and prior sessions: [LIVE_TUNER](../../docs/LIVE_TUNER.md). No release, artistic preset or production acceptance.
 
 ## Start and controls
 

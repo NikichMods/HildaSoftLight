@@ -1,10 +1,14 @@
 # Live tuner — подготовка
 
-**Трёхкомпонентный Unitless tuner / optional UMG markers PREPARED/UNTESTED**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
+**Трёхкомпонентный tuner: PARTIAL_RUNTIME / NATIVE_CRASH, причина открыта**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
-## Текущая установка трёхкомпонентного кандидата
+## Текущее сравнение после native crash
+
+Source b392c3c исполнил23м44с после READY, затем native UE4SS AV; сохранён crash dump и точная диагностика в [NATIVE_CRASH_2026-10-30](NATIVE_CRASH_2026-10-30.md). Установленный5Lua payload остаётся тем же, никакого fix не заявлено. По прямому разрешению пользователя для одного сравнения временно отключена только активность SoulsEnemyHUD; CombatHUD/tuner включены. После run обязательно сначала архивировать лог и вернуть исходный mods.txt при закрытой игре. Ранее подготовленная установка и source identity ниже — история неизменного payload, а не актуальный трёхмодовый active set. Несохранённые числа восстановлены приватно и не применены.
+
+## История: установка трёхкомпонентного кандидата
 
 Closed-game установлен source `b392c3c952d8bbb10ae197886b3e1b8c71422168`, main SHA256 `6568c84e4a65197172b41b1550c72d6b6aeb7ade97326b35d2c45d1650b19ed6`; все5Lua byte-identical Git blobs/source-manifest/installed. Прежний exact own payload и failure diagnostic сохранены; old schema1 файла в текущей установке не было, при наличии он сохраняется. Original44 mod files и19 текущих loader/config/save inputs не изменились. Active: CombatHUD, SoulsEnemyHUD и этот tuner. Private manifest `.local/live-light-tuner/three-fill-update-20261030T153403Z/manifest.json`, current-install обновлён; exact rollback готов и проверен, не выполнялся. Игру исполнитель не запускал/не закрывал; runtime нового кандидата не исполнялся.
 
