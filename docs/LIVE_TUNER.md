@@ -4,6 +4,10 @@
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
+## Текущая установка трёхкомпонентного кандидата
+
+Closed-game установлен source `b392c3c952d8bbb10ae197886b3e1b8c71422168`, main SHA256 `6568c84e4a65197172b41b1550c72d6b6aeb7ade97326b35d2c45d1650b19ed6`; все5Lua byte-identical Git blobs/source-manifest/installed. Прежний exact own payload и failure diagnostic сохранены; old schema1 файла в текущей установке не было, при наличии он сохраняется. Original44 mod files и19 текущих loader/config/save inputs не изменились. Active: CombatHUD, SoulsEnemyHUD и этот tuner. Private manifest `.local/live-light-tuner/three-fill-update-20261030T153403Z/manifest.json`, current-install обновлён; exact rollback готов и проверен, не выполнялся. Игру исполнитель не запускал/не закрывал; runtime нового кандидата не исполнялся.
+
 ## Три источника Unitless и optional markers — текущая подготовка
 
 31 offline test PASS (27 policy/orchestration,3 projection,1 parse-only syntax check всех5Lua); native UI/projection/shadow/rendering приёмка остаётся открытой.

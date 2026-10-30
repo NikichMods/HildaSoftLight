@@ -9,3 +9,5 @@
 Optional F/B/E text markers в том же own UMG host следуют реальным world transforms. Divide toggle, только редактор, без доп. компонентов/действий; behind/offscreen скрываются. Native numeric projection/DPI/slot sanity проверяются; marker failure отключает только markers. One EngineTick/input safety/cleanup всех3 сохраняются.
 
 Offline policy/projection проверки не заменяют новую runtime-марshalling/rendering/визуальную приёмку. Production/полный lifecycle/художественные числа остаются открытыми. Следующий шаг — один пользовательский run нового кандидата с F/B/E/falloff/markers/SAVE/STOP, затем чтение локальных логов.
+
+Установлен closed-game research source `b392c3c952d8bbb10ae197886b3e1b8c71422168`;5Lua exact hashes и rollback подтверждены.31 offline checks PASS. Runtime Unitless/channel split/markers/SAVE/STOP нового кандидата ожидает пользователя.
