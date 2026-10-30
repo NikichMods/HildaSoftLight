@@ -1,6 +1,6 @@
 # Native crash and one-run comparison —2026-10-30
 
-Status: PARTIAL_RUNTIME / NATIVE_CRASH; cause unproved. User approved one comparison with only SoulsEnemyHUD temporarily disabled. No tuner source fix is claimed. Main/releases unchanged.
+Status: prior native crash cause unproved; [comparison completed, activity restored, working profile accepted](COMPARISON_RESULT_2026-10-30.md). The plan below records the earlier prepared comparison. User approved one comparison with only SoulsEnemyHUD temporarily disabled. No tuner source fix is claimed. Main/releases unchanged.
 
 ## Preserved candidate and evidence
 

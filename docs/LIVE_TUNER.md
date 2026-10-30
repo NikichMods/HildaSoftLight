@@ -4,7 +4,11 @@
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).
 
-## Текущее сравнение после native crash
+## Текущее состояние: рабочий профиль принят, сравнение завершено
+
+[Результат69-минутного прогона](COMPARISON_RESULT_2026-10-30.md): без вылета игры, ожидаемый pawn-expired STOP при load, explicit SAVE и cleanup всех3. Пользователь выбрал сохранённый Front0.15, canonical профиль закреплён в REQUIREMENTS и profiles/active-unitless-v2.ini. Installed file уже соответствует ему; source b392c3c не менялся. SoulsEnemyHUD восстановлен точно после архивации лога. Registry error в UE4SS остался и без него; root cause прежнего AV не объявлен исправленным. Load/rebind support не добавлена, F10 после STOP не перезапускает сессию до нового процесса игры.
+
+## История: разрешённое сравнение после native crash
 
 Source b392c3c исполнил23м44с после READY, затем native UE4SS AV; сохранён crash dump и точная диагностика в [NATIVE_CRASH_2026-10-30](NATIVE_CRASH_2026-10-30.md). Установленный5Lua payload остаётся тем же, никакого fix не заявлено. По прямому разрешению пользователя для одного сравнения временно отключена только активность SoulsEnemyHUD; CombatHUD/tuner включены. После run обязательно сначала архивировать лог и вернуть исходный mods.txt при закрытой игре. Ранее подготовленная установка и source identity ниже — история неизменного payload, а не актуальный трёхмодовый active set. Несохранённые числа восстановлены приватно и не применены.
 

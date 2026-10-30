@@ -1,6 +1,6 @@
 # Three-light live tuner — research only
 
-PARTIAL_RUNTIME / NATIVE_CRASH, cause unproved. [Crash evidence and authorized one-run comparison](../../docs/NATIVE_CRASH_2026-10-30.md). Installed source remains unchanged; only SoulsEnemyHUD activity is temporarily disabled with exact return prepared. Own PointLightComponent construction/registration reuses R-018, viewport host reuses R-017, single-EngineTick input avoids the previous input-thread handoff. Current source/install evidence and prior sessions: [LIVE_TUNER](../../docs/LIVE_TUNER.md). No release, artistic preset or production acceptance.
+Working profile accepted; [comparison completed and SoulsEnemyHUD restored](../../docs/COMPARISON_RESULT_2026-10-30.md). Unresolved prior native crash/registry compatibility remains. Canonical [active-unitless-v2.ini](profiles/active-unitless-v2.ini) matches the current installed saved file; Front0.15 is the user's chosen saved value. Diagnostic starts below remain fallback when no valid file exists. Own PointLightComponent construction/registration reuses R-018, viewport host reuses R-017, single-EngineTick input avoids the previous input-thread handoff. Current source/install evidence and prior sessions: [LIVE_TUNER](../../docs/LIVE_TUNER.md). No release, artistic preset or production acceptance.
 
 ## Start and controls
 

@@ -11,7 +11,7 @@
 
 ## Границы
 
-Не менять глобальную экспозицию/гамму/тонмаппинг, Glimmer, игровые эффекты, частицы, настройки, сохранения или другие моды. Собственный свет должен быть независимо отключаемым и очищаемым. Интенсивность, радиус, цвет, положение и окончательная архитектура не утверждены.
+Не менять глобальную экспозицию/гамму/тонмаппинг, Glimmer, игровые эффекты, частицы, настройки, сохранения или другие моды. Собственный свет должен быть независимо отключаемым и очищаемым. Рабочие числовые параметры приняты в docs/REQUIREMENTS.md и profiles/active-unitless-v2.ini; окончательные production lifecycle/совместимость/выпуск не приняты.
 
 Текущий разрешённый этап — research-only live tuner в `research/live-light-tuner`; см. docs/LIVE_TUNER.md. Три независимых собственных PointLightComponent Character Front/Back (channel1) и Environment Fill (channel0), Unitless с non-inverse-square FalloffExponent, минимальная текстовая панель, клавиатура, live bounded настройки и явное сохранение только в файл мода. Front имеет native shadow toggle; Back без теней. Начальные1/0.5/0.25 Unitless — диагностические, не пресет; profile schema2 отдельный, schema1 не мигрирует. Optional собственные UMG F/B/E markers; при ошибке проекции отключаются только они. Нет90s timeout; ручной STOP/потеря target отменяют own callback и удаляют свои компоненты/UI. Установка только closed-game с проверенным откатом; игру запускает/закрывает пользователь. Не переходить к production, Actor fallback, Coherent/pak/framework, respawn/travel/cutscene support или выпуску релиза.
 

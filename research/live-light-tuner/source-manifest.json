@@ -1,5 +1,5 @@
 {
-  "preparationStatus": "PARTIAL_RUNTIME_NATIVE_CRASH_SAME_PAYLOAD_COMPARISON_WITHOUT_SOULS_PREPARED",
+  "preparationStatus": "WORKING_PROFILE_ACCEPTED_COMPARISON_COMPLETE_NATIVE_CRASH_CAUSE_UNRESOLVED",
   "base": "d01606534066cf0ac99edc3a6041fd4b92feda3e",
   "payloadSha256": {
     "KeyboardBindings.lua": "ef35fff0ebff4e327328f3c3a803717e8b8d3087e0841ddc847b9bef7f83725f",
@@ -110,5 +110,11 @@
     "oldSchema1": "preserved; never read/migrated/overwritten",
     "markerState": "ephemeral"
   },
-  "sharedResearchSnapshot": "83615158047a6960e2aafc1072dc6c277c8e9147"
+  "sharedResearchSnapshot": "83615158047a6960e2aafc1072dc6c277c8e9147",
+  "activeWorkingProfile": {
+    "file": "profiles/active-unitless-v2.ini",
+    "sha256": "70bd93107584767a3993524bb003d4d7b28cd92867b54364c855bfda109420ea",
+    "userApproved": "2026-10-30; explicit Num9 version with Front0.15",
+    "scope": "working tuner profile; not full lifecycle/compatibility/release acceptance"
+  }
 }

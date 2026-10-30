@@ -1,1 +1,2 @@
 research/live-light-tuner/Scripts/*.lua text eol=lf
+research/live-light-tuner/profiles/*.ini text eol=lf

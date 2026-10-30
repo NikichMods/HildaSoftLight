@@ -12,7 +12,7 @@
 
 ## Кандидат и открытые решения
 
-Пользователь выбрал трёхкомпонентную схему для дальнейшей калибровки: Character Front и Character Back на Lighting Channel1, Environment Fill на Channel0. Все три собственные transient PointLightComponent, фиксированное bUseInverseSquaredFalloff=false до регистрации, IntensityUnits=Unitless. У Character Fill регулируется безразмерная Intensity, LightFalloffExponent, AttenuationRadius(cm), root-local XYZ(cm), temperature(K); Environment имеет такие же независимые параметры и ON/OFF. Проверка dynamic shadows остаётся только у Front. Затухание/радиус/числа и окончательный художественный пресет ещё не приняты. Готовность production и полный lifecycle этим выбором не подтверждены.
+Пользователь выбрал трёхкомпонентную схему для дальнейшей калибровки: Character Front и Character Back на Lighting Channel1, Environment Fill на Channel0. Все три собственные transient PointLightComponent, фиксированное bUseInverseSquaredFalloff=false до регистрации, IntensityUnits=Unitless. У Character Fill регулируется безразмерная Intensity, LightFalloffExponent, AttenuationRadius(cm), root-local XYZ(cm), temperature(K); Environment имеет такие же независимые параметры и ON/OFF. Проверка dynamic shadows остаётся только у Front. Рабочие числа тюнера приняты пользователем в профиле ниже; окончательная production-приёмка и общий художественный результат во всех сценах остаются открытыми. Готовность production и полный lifecycle этим выбором не подтверждены.
 
 Принятая runtime-маска Хильды0+1, тестовой геометрии0. Character channel1 отделяет её подсветку от этой геометрии; Environment channel0 также может освещать Хильду. Полная изоляция Environment от персонажа не обещается, чужие Lighting Channels не меняются.
 
@@ -39,3 +39,17 @@
 Явное сохранение в отдельный `tuner-unitless-v2.ini` с schema2/mode=unitless-exponent. Старый `tuner-settings.ini` schema1/Lumens не читать как Unitless, не мигрировать численно и не перезаписывать автоматически. Метки и состояние редактора не являются частью художественного пресета и не сохраняются.
 
 Optional F/B/E markers — три малые цветные собственные текстовые метки на реальных world transforms компонентов, только в редакторе; NumDivide включает/выключает. Использовать существующий независимый UMG host и штатную numeric-out projection, проверять DPI/viewport coordinates/behind-camera. Нет occlusion promise. Никаких StaticMesh/material/HTML/pak/DrawDebug dependencies или дополнительных long-lived components/callbacks. Неудача необязательной проекции не блокирует свет: скрыть и отключить markers, сообщить ограничение. Начальные числа явно диагностические; визуальная и runtime-приёмка нового сочетания остаётся за пользователем.
+
+## Действующий рабочий профиль, принят2026-10-30
+
+Пользователь одобрил выбранные значения и явно выбрал сохранённый Num9 вариант: Front intensity0.15, а не более позднее несохранённое0.05. Канонический файл: [active-unitless-v2.ini](../research/live-light-tuner/profiles/active-unitless-v2.ini), schema2/mode=unitless-exponent. Он byte-identical текущему файлу тюнера, SHA256 `70bd93107584767a3993524bb003d4d7b28cd92867b54364c855bfda109420ea`. Это принятые рабочие настройки в проверенной сцене, не объявление stable release/полного lifecycle/совместимости после native crash.
+
+| Источник | Intensity Unitless | FalloffExponent | Radius cm | root-local X/Y/Z cm | K | ON | Shadows |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Character Front, channel1 |0.15 |1.50 |400 |30/−50/110 |4000 |yes |yes |
+| Character Back, channel1 |0.10 |0.10 |230 |−30/50/110 |6000 |yes |no |
+| Environment Fill, channel0 |0.15 |15.00 |50 |0/0/48 |2500 |yes |no |
+
+Маркерные цвета/видимость и состояние редактора не входят в профиль. Environment channel0 по-прежнему может освещать Hilda; чужие каналы не меняются. Диагностические defaults в исходнике не подменяются: они остаются fallback при отсутствии/невалидном файле. Действующая локальная установка читает сохранённый файл при ручном запуске редактора.
+
+Загрузка игры/смена pawn сейчас заканчивает research session с cleanup, без автоматического rebind. В сравнительном run это наблюдалось на реальной выгрузке мира: action отменён, все3 own lights native-dead, дальнейших действий нет. Для повторного запуска текущей версии нужен новый процесс игры и Ctrl+Alt+F10. Автовосстановление при load/respawn остаётся отдельной неподготовленной production-задачей, этим принятием чисел не разрешено молча расширять lifecycle.
