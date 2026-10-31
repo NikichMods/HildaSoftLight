@@ -1,5 +1,7 @@
 # Live tuner — подготовка
 
+Текущий этап с2026-10-31: [production candidate0.1.0](CANDIDATE-0.1.0.md); следующие research-разделы сохраняют историю, не ограничивают отдельно разрешённый production-development.
+
 **Трёхкомпонентный tuner: PARTIAL_RUNTIME / NATIVE_CRASH, причина открыта**,2026-10-30. Ветка `research/live-light-tuner`, база подтверждённого manual runtime `d01606534066cf0ac99edc3a6041fd4b92feda3e`. Main остаётся без изменений. Это research-only инструмент, не релиз и не утверждённый визуальный пресет.
 
 [Раскладка, параметры, ограничения и короткая процедура](../research/live-light-tuner/README.md), [точные SHA256 исходников/API](../research/live-light-tuner/source-manifest.json).

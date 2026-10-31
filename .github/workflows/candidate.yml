@@ -1,0 +1,39 @@
+name: HildaSoftLight candidate checks
+on:
+  push:
+    branches: ["codex/**", main]
+    paths: ["Scripts/**", "DefaultProfile.ini", "VERSION", "packaging/**", "tools/**", "tests/**", "requirements-test.txt", "LICENSE", "LICENSING.md", ".github/workflows/candidate.yml"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hilda-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+      - name: Lua5.4 offline dependency
+        run: python -m pip install --only-binary=:all: -r requirements-test.txt
+      - name: Policy, lifecycle, failure and syntax checks
+        run: python tools/test.py
+      - name: Version, preset and deterministic exact-source package
+        run: python tools/build.py --source "$EXPECTED_SOURCE_SHA" --output dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HildaSoftLight-candidate-${{ github.sha }}
+          path: dist/*
+          retention-days: 7

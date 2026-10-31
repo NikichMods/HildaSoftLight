@@ -1,5 +1,7 @@
 # План исследования и текущая граница
 
+Текущий этап с2026-10-31: [production candidate0.1.0](CANDIDATE-0.1.0.md); следующие research-разделы сохраняют историю, не ограничивают отдельно разрешённый production-development.
+
 ## Текущий шаг
 
 Первый статический этап и single-light manual runtime завершены; старые разделы ниже — история выбора. Сейчас пользователь разрешил трёхкомпонентный Unitless/exponent live tuner и optional UMG projection markers. Достаточная подготовка: точные native contracts, offline policy/OutParm checks, source/install identity и безопасный откат. Следующая неопределённость — реальный рендер новой схемы и marker alignment/OutParm/DPI. После подготовки установить closed-game и ждать одного пользовательского run; не расширять исследование в renderer/framework/respawn support. Точные текущие границы и evidence: [LIVE_TUNER](LIVE_TUNER.md).
