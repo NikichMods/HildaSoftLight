@@ -1,6 +1,6 @@
 # HildaSoftLight0.1.0 — production candidate, NOT stable
 
-Branch `codex/production-0.1.0`, base88d640f. First candidate version0.1.0 is immutable once handed. VERSION is canonical; tools/build.py checks Lua metadata, package instruction version and exact approved preset bytes, then verifies every package input against the recorded source commit. Archive is deterministic ZIP_STORED with fixed metadata. Frozen source/archive/CI identity will be recorded after checks; no stable tag/release/main promotion yet.
+Branch `codex/production-0.1.0`, base88d640f. First candidate version0.1.0 is immutable once handed. VERSION is canonical; tools/build.py checks Lua metadata, package instruction version and exact approved preset bytes, then verifies every package input against the recorded source commit. Archive is deterministic ZIP_STORED with fixed metadata. Runtime source `73b2c74e0f2bc49b675404efc14c29905e6e4402`. SHA-256 of `HildaSoftLight-0.1.0.zip`: `7c76372aa6085bd52154377bff2eb91c854cda2f921576625d0e62a7517d1b38`. All 56 offline checks passed. The ZIP from [CI run 41188596936](https://github.com/NikichMods/HildaSoftLight/actions/runs/41188596936) at `172d726` is byte-identical to the local candidate. The CI-only commit preserves the package inputs.
 
 ## Prepared behavior
 
@@ -12,20 +12,21 @@ Source/capability basis: [PRODUCTION_READINESS](PRODUCTION_READINESS.md), R-004/
 
 Canonical folder HildaSoftLight/:5Lua Scripts (main/Profile/EditorView/Projection/KeyboardBindings), DefaultProfile.ini, VERSION, enabled.txt, README.txt, LICENSE and LICENSING.md. No loader, other-mod files, pak, game asset or generated dump. No mutable settings file in ZIP. Existing own user profile must be preserved/copied on first tuner→production migration, never overwritten on update.
 
-Installation is currently **NOT PERFORMED**: SoulsEnemyHUD0.3.3 is separately installed and unaccepted. CombatHUD0.4.1 is accepted. Do not mix two unaccepted changes or revert that other candidate in this task. Once the other acceptance is resolved, verify closed game, snapshot exact own tuner+profile/log/shared hashes, archive old own folder out of Mods, enable new own payload last, compare hashes, verify exact own rollback. Never run both old tuner and production. User launches/closes game.
+Пользователь установил кандидат вручную. На 2026-11-05 все 11 установленных файлов совпадали по SHA-256 с манифестом ZIP, а старой папки `HildaSoftLightLiveTuner` в `Mods` уже не было. Рядом с файлами кандидата находится отдельный пользовательский `settings-unitless-v2.ini`. Игровые сессии загружали именно сохранённый профиль (`profile=saved`). В нём Environment Fill выключен, поэтому `lights=3` означает три привязанных компонента. Художественная проверка всех трёх одновременно из этого счётчика не следует.
+
+## Подтверждено в игре
+
+- **Автозапуск.** Логи 4 и 5 ноября 2026 фиксируют `LOADED profile=saved` и затем `BOUND generation=1 lights=3 auto=true ui=false` до открытия редактора.
+- **Повторная привязка.** 4 ноября после `ClientRestart` в 16:19:14 записано `RELEASED reason=context_pawn lights=0 generation=1`, затем в 16:19:20 — `BOUND generation=2 lights=3 auto=true ui=false`. Это подтверждает очистку и восстановление в наблюдавшемся переходе игрового контекста.
+- **Редактор.** 5 ноября редактор открылся в 19:29:12, закрылся в 19:29:22 с освобождением UI при входе в меню и снова открылся в 19:29:40. Между этими событиями журнал не показывает освобождения или повторной привязки света.
+- **Наблюдения пользователя.** На игровых скриншотах Character Fill улучшает читаемость Хильды в темноте. При опробованных настройках Environment Fill давал заметные пятна на полу и стенах. Пользователь также сообщил об отсутствии света мода в наблюдавшихся катсценах. Причина в этих сценах не установлена.
+
+Исходные UE4SS-логи хранятся локально. SHA-256 сессии 4 ноября: `90a5b5bc868b0610aae77afc96655406fb50dc56688544872cf671f0db847e83`. SHA-256 сессии 5 ноября: `676937dcc0eeb4a2f954b40a27a19b843775495f8892f8d89e9c5296f62af9f7`.
 
 ## Offline/native gate separation
 
-Local tests cover initial readiness, approved/default/user settings, no UI/key-audit at normal start, repeated loads/HP0/pawn replacement, unique names and one handle, UI/marker faults, partial3-component cleanup, incomplete cleanup circuit break, cancel failure/late inert callbacks, key edges across editor/resume, pause/resume and shadow comparison. Syntax and schema roundtrip/preset hash checked. UI/native calls are mocked there; these are not native auto/load/death/renderer PASS. CI must pass exact source and package identity before handoff.
+Local tests cover initial readiness, approved/default/user settings, no UI/key-audit at normal start, repeated loads/HP0/pawn replacement, unique names and one handle, UI/marker faults, partial3-component cleanup, incomplete cleanup circuit break, cancel failure/late inert callbacks, key edges across editor/resume, pause/resume and shadow comparison. Syntax and schema roundtrip/preset hash checked. UI/native calls are mocked there; these are not native auto/load/death/renderer PASS. Автозапуск, один тип повторной привязки и цикл редактора подтверждены отдельно игровыми логами выше.
 
-## Short native acceptance after separate installation
+## Открытые проверки
 
-1. Load gameplay normally: light appears without editor; no panel/markers visible.
-2. Ctrl+Alt+F10 open/close: same light set, close keeps light. Use7/8/2/4/6, Front shadows3 and markersDivide briefly; no artistic recalibration needed.
-3. For persistence, change Front intensity one0.05 step, Num9, load/restart and confirm the value. Restore accepted0.15 and save if the change was only a test.
-4. Load a save/world: light automatically returns without old-world residue/doubles; inspect BOUND/RELEASED generations after run.
-5. Death/respawn: observe release/recovery, no duplicates. This gate is OPEN until actually exercised; do not manufacture a mocked PASS.
-6. Use Glimmer normally, then Num* pause and F10 resume: each effect keeps its intended independent behavior. Close editor for ordinary play.
-7. Coexistence only with accepted CombatHUD/SoulsEnemyHUD versions, review UE4SS errors after game close. Native crash: snapshot raw reports and identities first, do not blame the last action.
-
-On completion report observations; the agent reads logs directly. No stable release until this candidate's mandatory gates are explicitly accepted. No game launch/termination or hot reload by agent.
+В доступных записях нет отдельного подтверждения цикла `Num9 → перезапуск → чтение нового значения`, перехода между мирами, сценария смерти и возрождения, проверки Glimmer, Num* и визуального отсутствия дублей. Совместный запуск с другими модами сам по себе не закрывает проверку совместимости. Явная приёмка кандидата для стабильного выпуска остаётся открытой.
